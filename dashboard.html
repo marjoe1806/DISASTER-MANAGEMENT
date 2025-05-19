@@ -5,25 +5,24 @@
     <meta charset="UTF-8">
     <title>Disaster Management Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Main Styles -->
     <style>
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             background: #1b2e1b;
             color: #fff;
         }
-
         header {
             background: #145a32;
             color: #ffd600;
             padding: 1rem;
             text-align: center;
         }
-
         main {
             padding: 2rem;
         }
-
         .btn {
             background: #145a32;
             color: #ffd600;
@@ -34,11 +33,9 @@
             font-weight: bold;
             transition: background 0.2s;
         }
-
         .btn:hover {
             background: #117a37;
         }
-
         #map {
             width: 100%;
             height: 400px;
@@ -46,24 +43,18 @@
             border-radius: 8px;
             border: 2px solid #ffd600;
         }
-
+        /* Incident Modal Styles */
         #incidentModal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background: rgba(20, 90, 50, 0.7);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
-
-        #incidentModal.active {
-            display: flex;
-        }
-
+        #incidentModal.active { display: flex; }
         #incidentModal>div {
             background: #223d22;
             padding: 2rem;
@@ -75,17 +66,8 @@
             animation: modalFadeIn 0.2s;
             color: #fff;
         }
-
-        #incidentModal h3 {
-            margin-top: 0;
-            color: #ffd600;
-        }
-
-        #incidentModal label {
-            font-weight: 500;
-            color: #ffd600;
-        }
-
+        #incidentModal h3 { margin-top: 0; color: #ffd600; }
+        #incidentModal label { font-weight: 500; color: #ffd600; }
         #incidentModal input[type="text"],
         #incidentModal textarea,
         #incidentModal select {
@@ -99,7 +81,6 @@
             background: #1b2e1b;
             color: #fff;
         }
-
         #incidentModal button[type="submit"] {
             background: #145a32;
             color: #ffd600;
@@ -109,11 +90,7 @@
             cursor: pointer;
             font-weight: 500;
         }
-
-        #incidentModal button[type="submit"]:hover {
-            background: #117a37;
-        }
-
+        #incidentModal button[type="submit"]:hover { background: #117a37; }
         #incidentModal #modalCancel {
             background: #ffd600;
             color: #145a32;
@@ -123,83 +100,68 @@
             cursor: pointer;
             font-weight: bold;
         }
-
-        #incidentModal #modalCancel:hover {
-            background: #ffe066;
-        }
-
+        #incidentModal #modalCancel:hover { background: #ffe066; }
         @keyframes modalFadeIn {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-
-        /* Report Modal */
+        /* Report Modal Styles */
         #reportModal>div {
             background: #223d22 !important;
             color: #fff !important;
             border: 2px solid #ffd600;
         }
-
-        #reportModal h3 {
-            color: #ffd600 !important;
-        }
-
+        #reportModal h3 { color: #ffd600 !important; }
         #closeReportModal {
             background: #ffd600 !important;
             color: #145a32 !important;
         }
-
-        #closeReportModal:hover {
-            background: #ffe066 !important;
-        }
-
-        #reportList table {
-            background: #1b2e1b;
-            color: #fff;
-        }
-
-        #reportList th {
-            background: #145a32;
-            color: #ffd600;
-        }
-
-        #reportList td {
-            border: 1px solid #ffd600;
-        }
-
+        #closeReportModal:hover { background: #ffe066 !important; }
+        #reportList table { background: #1b2e1b; color: #fff; }
+        #reportList th { background: #145a32; color: #ffd600; }
+        #reportList td { border: 1px solid #ffd600; }
         .updateBtn {
             background: #145a32 !important;
             color: #ffd600 !important;
         }
-
-        .updateBtn:hover {
-            background: #117a37 !important;
+        .updateBtn:hover { background: #117a37 !important; }
+        /* Responsive Styles */
+        @media (max-width: 700px) {
+            main>div:first-child {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 0.7rem !important;
+            }
+            main>div:first-child>div:last-child {
+                align-items: flex-start !important;
+                margin-left: 0 !important;
+            }
+            #map { height: 250px !important; }
+        }
+        @media (max-width: 480px) {
+            #map { height: 180px !important; }
+            .btn { width: 100%; margin-bottom: 0.5rem; }
         }
     </style>
-
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 
 <body>
+    <!-- Header and Navigation -->
     <header>
         <nav style="background:transparent;" class="navbar navbar-expand-sm navbar-light">
             <div style="width:100%; display:flex; align-items:center;">
-
                 <!-- Logo and Title -->
                 <a href="#" style="display:flex; align-items:center; text-decoration:none;">
                     <img src="https://negrosfest.wordpress.com/wp-content/uploads/2016/01/download-51.jpeg?w=272&h=272"
                         alt="Barangay System Logo" width="100" height="100"
                         style="margin-right:0.5rem; border-radius:50%;">
-                    <span style="font-size:1.1rem; font-weight:bold; color:#fff;">SAGAY CITY EMERGENCY RESPONSE AND MAPPING SYSTEM</span>
+                    <span style="font-size:1.1rem; font-weight:bold; color:#fff;">
+                        SAGAY CITY EMERGENCY RESPONSE AND MAPPING SYSTEM
+                    </span>
                 </a>
+                <!-- User Dropdown -->
                 <div style="margin-left: auto; position: relative; display: flex; align-items: center;">
                     <div id="userDropdown" style="position: relative;">
                         <button id="userDropdownBtn"
@@ -219,36 +181,28 @@
                         </div>
                     </div>
                 </div>
+                <!-- Dropdown Styles -->
                 <style>
                     #userDropdownBtn:hover,
                     #userDropdownBtn:focus {
                         background: rgba(255, 214, 0, 0.08);
                         outline: none;
                     }
-
                     #userDropdownMenu button:hover {
                         background: #145a32 !important;
                         color: #ffd600 !important;
                     }
-
                     #userDropdownMenu {
                         animation: fadeInDropdown 0.18s;
                     }
-
                     @keyframes fadeInDropdown {
-                        from {
-                            opacity: 0;
-                            transform: translateY(10px);
-                        }
-
-                        to {
-                            opacity: 1;
-                            transform: translateY(0);
-                        }
+                        from { opacity: 0; transform: translateY(10px);}
+                        to { opacity: 1; transform: translateY(0);}
                     }
                 </style>
+                <!-- Dropdown Script -->
                 <script>
-                    // Dropdown logic
+                    // User dropdown logic
                     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
                     const dropdownBtn = document.getElementById("userDropdownBtn");
                     const dropdownMenu = document.getElementById("userDropdownMenu");
@@ -256,7 +210,6 @@
                     const dropdownLogout = document.getElementById("dropdownLogout");
                     const dropdownLogin = document.getElementById("dropdownLogin");
                     const dropdownUsername = document.getElementById("dropdownUsername");
-
                     function updateDropdown() {
                         if (loggedInUser && loggedInUser.username) {
                             dropdownUsername.textContent = loggedInUser.username.toUpperCase();
@@ -272,7 +225,6 @@
                         }
                     }
                     updateDropdown();
-
                     dropdownBtn.onclick = function (e) {
                         e.stopPropagation();
                         dropdownMenu.style.display = dropdownMenu.style.display === "block" ? "none" : "block";
@@ -280,7 +232,6 @@
                     document.body.addEventListener("click", function () {
                         dropdownMenu.style.display = "none";
                     });
-
                     dropdownLogout.onclick = function () {
                         localStorage.removeItem("loggedInUser");
                         window.location.href = "login.html";
@@ -289,16 +240,18 @@
                         window.location.href = "login.html";
                     };
                 </script>
-                <!-- Toggler for mobile -->
+                <!-- Mobile Toggler (hidden) -->
                 <button style="margin-left:auto; background:none; border:none; display:none;" class="navbar-toggler"
                     type="button">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
             </div>
         </nav>
     </header>
+
+    <!-- Main Content -->
     <main>
+        <!-- Top Controls and Date/Time -->
         <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;">
             <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
                 <button class="btn" id="openModalBtn">Report New Incident</button>
@@ -311,37 +264,8 @@
                 <div id="currentTime" style="font-weight: bold;"></div>
             </div>
         </div>
+        <!-- Map Section -->
         <div id="map"></div>
-        <!-- You can add more dashboard content here -->
-        <style>
-            @media (max-width: 700px) {
-                main>div:first-child {
-                    flex-direction: column !important;
-                    align-items: stretch !important;
-                    gap: 0.7rem !important;
-                }
-
-                main>div:first-child>div:last-child {
-                    align-items: flex-start !important;
-                    margin-left: 0 !important;
-                }
-
-                #map {
-                    height: 250px !important;
-                }
-            }
-
-            @media (max-width: 480px) {
-                #map {
-                    height: 180px !important;
-                }
-
-                .btn {
-                    width: 100%;
-                    margin-bottom: 0.5rem;
-                }
-            }
-        </style>
     </main>
 
     <!-- Weather Modal -->
@@ -357,6 +281,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Incident Modal (Report New/Update Incident) -->
     <div id="incidentModal">
         <div>
             <h3>Report New Incident</h3>
@@ -407,7 +333,7 @@
         </div>
     </div>
 
-    <!-- Report Modal -->
+    <!-- Report Modal (View/Update Incidents) -->
     <div id="reportModal"
         style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1001; align-items:center; justify-content:center;">
         <div
@@ -418,13 +344,14 @@
             <div id="reportList"></div>
         </div>
     </div>
+
+    <!-- Report Modal Script -->
     <script>
-        // Report Modal logic
+        // Handles opening the report modal and populating the user's incidents
         const reportBtn = document.getElementById('reportBtn');
         const reportModal = document.getElementById('reportModal');
         const closeReportModal = document.getElementById('closeReportModal');
         const reportList = document.getElementById('reportList');
-
         reportBtn.onclick = function () {
             // Load incidents from localStorage
             let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
@@ -467,12 +394,10 @@
                     </table>
                 </div>`;
             }
-
             // Make report modal larger
             reportModal.querySelector('div').style.maxWidth = '90vw';
             reportModal.querySelector('div').style.width = '98%';
             reportModal.style.display = 'flex';
-
             // Add event listeners for update buttons
             document.querySelectorAll('.updateBtn').forEach(btn => {
                 btn.onclick = function () {
@@ -530,11 +455,9 @@
                 };
             });
         };
-
         closeReportModal.onclick = function () {
             reportModal.style.display = 'none';
         };
-
         window.addEventListener('click', function (e) {
             if (e.target === reportModal) {
                 reportModal.style.display = 'none';
@@ -544,15 +467,15 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Main App Script -->
     <script>
-        // Modal open/close logic
+        // Modal open/close logic for incident modal
         const openModalBtn = document.getElementById('openModalBtn');
         const incidentModal = document.getElementById('incidentModal');
         const modalCancel = document.getElementById('modalCancel');
         const modalForm = document.getElementById('modalForm');
         const modalLat = document.getElementById('modalLat');
         const modalLng = document.getElementById('modalLng');
-
         openModalBtn.onclick = () => {
             incidentModal.style.display = 'flex';
             modalLat.value = '';
@@ -574,21 +497,17 @@
         };
 
         // Map logic
-        let map = L.map('map').setView([10.88015256475575, 123.4027104654905], 12); // Centered on Philippines
+        let map = L.map('map').setView([10.88015256475575, 123.4027104654905], 12); // Centered on Sagay City
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
         // Make the map larger by increasing its height
         document.getElementById('map').style.height = '500px';
         map.invalidateSize();
-
         let marker = null;
-
         map.on('click', function (e) {
             // Show modal and set lat/lng
             incidentModal.style.display = 'flex';
             modalLat.value = e.latlng.lat;
             modalLng.value = e.latlng.lng;
-
             // Add or move marker
             if (marker) {
                 marker.setLatLng(e.latlng);
@@ -609,8 +528,7 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c;
         }
-
-        // Reference points
+        // Reference points (Fire and Police stations)
         const refLat1 = 10.89780476100566;
         const refLng1 = 123.41673706252892;
         const refLat2 = 10.87904106168548;
@@ -642,13 +560,12 @@
                     .bindPopup(popupHtml);
             });
         }
-
         loadIncidents();
 
+        // Image preview logic
         const modalImage = document.getElementById('modalImage');
         const imagePreview = document.getElementById('imagePreview');
         let imageDataUrl = "";
-
         modalImage.onchange = function (e) {
             const file = e.target.files[0];
             if (file) {
@@ -664,6 +581,7 @@
             }
         };
 
+        // Incident form submit logic (add new incident)
         modalForm.onsubmit = (e) => {
             e.preventDefault();
             // Collect data
@@ -674,25 +592,20 @@
             const barangay = document.getElementById('modalBarangay').value;
             const lat = modalLat.value;
             const lng = modalLng.value;
-
             if (!lat || !lng) {
                 alert('Please select a location on the map.');
                 return;
             }
-
             // Save to localStorage
             const incident = { id: loggedInUser.id, category, description, purok, street, barangay, lat, lng, date: new Date().toISOString(), image: imageDataUrl || "" };
             let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
             incidents.push(incident);
             localStorage.setItem('incidents', JSON.stringify(incidents));
-
             alert('Incident reported!');
             incidentModal.style.display = 'none';
             modalForm.reset();
             imagePreview.innerHTML = "";
             imageDataUrl = "";
-
-
             // Add marker for the new incident
             const dist1 = haversine(refLat1, refLng1, parseFloat(lat), parseFloat(lng));
             const dist2 = haversine(refLat2, refLng2, parseFloat(lat), parseFloat(lng));
@@ -701,17 +614,10 @@
                 .bindPopup(
                     `<b>${category}</b><br>${description}<br><small>${new Date(incident.date).toLocaleString()}</small><br><b>Distance from Fire Station:</b> ${dist1.toFixed(2)} km<br><b>Distance from Police Station:</b> ${dist2.toFixed(2)} km`
                 );
-
             marker = null;
         };
 
-        setTimeout(function () {
-            var alertElement = document.getElementById('tempAlert');
-            if (alertElement) {
-                alertElement.style.display = 'none';
-            }
-        }, 5000);
-
+        // Date and Time display logic
         function updateDateTime() {
             const now = new Date();
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -719,25 +625,14 @@
             document.getElementById('currentDate').textContent = now.toLocaleDateString(undefined, options);
             document.getElementById('currentTime').textContent = time;
         }
-
         setInterval(updateDateTime, 1000);
-        updateDateTime(); // Initial call
-
-        // Auto-hide the error alert after 5 seconds
-        setTimeout(function () {
-            var alertElement = document.getElementById('errorAlert');
-            if (alertElement) {
-                alertElement.style.display = 'none';
-            }
-        }, 2000); // 5000 milliseconds = 5 seconds
-
+        updateDateTime();
 
         // Weather Modal logic (5-day forecast)
         const weatherBtn = document.getElementById('weatherBtn');
         const weatherModal = document.getElementById('weatherModal');
         const closeWeatherModal = document.getElementById('closeWeatherModal');
         const weatherContent = document.getElementById('weatherContent');
-
         weatherBtn.onclick = function () {
             weatherModal.style.display = 'flex';
             weatherContent.innerHTML = "<p>Loading weather...</p>";
@@ -780,7 +675,6 @@
                     });
                     html += '</div>';
                     weatherContent.innerHTML = html;
-
                     // Optional: Custom scrollbar styling for modern browsers
                     const weatherScroll = document.getElementById('weatherScroll');
                     if (weatherScroll) {
@@ -800,16 +694,6 @@
                 weatherModal.style.display = 'none';
             }
         });
-        // Logout button logic
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.onclick = function () {
-                //localStorage.clear();
-                // Redirect to login page (replace 'login.html' with your actual login page)
-                window.location.href = 'login.html';
-            };
-        }
     </script>
 </body>
-
 </html>
