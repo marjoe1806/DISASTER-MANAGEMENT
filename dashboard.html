@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Disaster Management Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #1b2e1b;
+            color: #fff;
+        }
+
+        header {
+            background: #145a32;
+            color: #ffd600;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        .btn {
+            background: #145a32;
+            color: #ffd600;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #117a37;
+        }
+
+        #map {
+            width: 100%;
+            height: 400px;
+            margin-top: 2rem;
+            border-radius: 8px;
+            border: 2px solid #ffd600;
+        }
+
+        #incidentModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(20, 90, 50, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #incidentModal.active {
+            display: flex;
+        }
+
+        #incidentModal>div {
+            background: #223d22;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 350px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+            animation: modalFadeIn 0.2s;
+            color: #fff;
+        }
+
+        #incidentModal h3 {
+            margin-top: 0;
+            color: #ffd600;
+        }
+
+        #incidentModal label {
+            font-weight: 500;
+            color: #ffd600;
+        }
+
+        #incidentModal input[type="text"],
+        #incidentModal textarea,
+        #incidentModal select {
+            border: 1px solid #ffd600;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 0.2rem;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            background: #1b2e1b;
+            color: #fff;
+        }
+
+        #incidentModal button[type="submit"] {
+            background: #145a32;
+            color: #ffd600;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        #incidentModal button[type="submit"]:hover {
+            background: #117a37;
+        }
+
+        #incidentModal #modalCancel {
+            background: #ffd600;
+            color: #145a32;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #incidentModal #modalCancel:hover {
+            background: #ffe066;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Report Modal */
+        #reportModal>div {
+            background: #223d22 !important;
+            color: #fff !important;
+            border: 2px solid #ffd600;
+        }
+
+        #reportModal h3 {
+            color: #ffd600 !important;
+        }
+
+        #closeReportModal {
+            background: #ffd600 !important;
+            color: #145a32 !important;
+        }
+
+        #closeReportModal:hover {
+            background: #ffe066 !important;
+        }
+
+        #reportList table {
+            background: #1b2e1b;
+            color: #fff;
+        }
+
+        #reportList th {
+            background: #145a32;
+            color: #ffd600;
+        }
+
+        #reportList td {
+            border: 1px solid #ffd600;
+        }
+
+        .updateBtn {
+            background: #145a32 !important;
+            color: #ffd600 !important;
+        }
+
+        .updateBtn:hover {
+            background: #117a37 !important;
+        }
+    </style>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+
+<body>
+    <header>
+        <nav style="background:transparent;" class="navbar navbar-expand-sm navbar-light">
+            <div style="width:100%; display:flex; align-items:center;">
+
+                <!-- Logo and Title -->
+                <a href="#" style="display:flex; align-items:center; text-decoration:none;">
+                    <img src="https://negrosfest.wordpress.com/wp-content/uploads/2016/01/download-51.jpeg?w=272&h=272"
+                        alt="Barangay System Logo" width="100" height="100"
+                        style="margin-right:0.5rem; border-radius:50%;">
+                    <span style="font-size:1.1rem; font-weight:bold; color:#fff;">SAGAY CITY EMERGENCY RESPONSE AND MAPPING SYSTEM</span>
+                </a>
+                <div style="margin-left: auto; position: relative; display: flex; align-items: center;">
+                    <div id="userDropdown" style="position: relative;">
+                        <button id="userDropdownBtn"
+                            style="background: none; border: none; color: #ffd600; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 4px; transition: background 0.2s;">
+                            <span id="dropdownUsername" style="color: #ffd600;"></span>
+                            <span style="font-size: 1.3rem;">&#9662;</span>
+                        </button>
+                        <div id="userDropdownMenu"
+                            style="display: none; position: absolute; right: 0; top: 110%; background: #223d22; border: 1px solid #ffd600; border-radius: 6px; min-width: 160px; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.18); overflow: hidden;">
+                            <div id="dropdownUser"
+                                style="padding: 0.8rem 1.2rem; color: #ffd600; font-weight: bold; border-bottom: 1px solid #ffd600; background: #1b2e1b; display: none;">
+                            </div>
+                            <button id="dropdownLogout"
+                                style="width: 100%; background: none; border: none; color: #ffd600; font-size: 1rem; padding: 0.8rem 1.2rem; text-align: left; cursor: pointer; transition: background 0.2s; display: none;">Logout</button>
+                            <button id="dropdownLogin"
+                                style="width: 100%; background: none; border: none; color: #ffd600; font-size: 1rem; padding: 0.8rem 1.2rem; text-align: left; cursor: pointer; transition: background 0.2s; display: none;">Login</button>
+                        </div>
+                    </div>
+                </div>
+                <style>
+                    #userDropdownBtn:hover,
+                    #userDropdownBtn:focus {
+                        background: rgba(255, 214, 0, 0.08);
+                        outline: none;
+                    }
+
+                    #userDropdownMenu button:hover {
+                        background: #145a32 !important;
+                        color: #ffd600 !important;
+                    }
+
+                    #userDropdownMenu {
+                        animation: fadeInDropdown 0.18s;
+                    }
+
+                    @keyframes fadeInDropdown {
+                        from {
+                            opacity: 0;
+                            transform: translateY(10px);
+                        }
+
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+                </style>
+                <script>
+                    // Dropdown logic
+                    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+                    const dropdownBtn = document.getElementById("userDropdownBtn");
+                    const dropdownMenu = document.getElementById("userDropdownMenu");
+                    const dropdownUser = document.getElementById("dropdownUser");
+                    const dropdownLogout = document.getElementById("dropdownLogout");
+                    const dropdownLogin = document.getElementById("dropdownLogin");
+                    const dropdownUsername = document.getElementById("dropdownUsername");
+
+                    function updateDropdown() {
+                        if (loggedInUser && loggedInUser.username) {
+                            dropdownUsername.textContent = loggedInUser.username.toUpperCase();
+                            dropdownUser.textContent = "Welcome: " + loggedInUser.username.toUpperCase();
+                            dropdownUser.style.display = "block";
+                            dropdownLogout.style.display = "block";
+                            dropdownLogin.style.display = "none";
+                        } else {
+                            dropdownUsername.textContent = "Account";
+                            dropdownUser.style.display = "none";
+                            dropdownLogout.style.display = "none";
+                            dropdownLogin.style.display = "block";
+                        }
+                    }
+                    updateDropdown();
+
+                    dropdownBtn.onclick = function (e) {
+                        e.stopPropagation();
+                        dropdownMenu.style.display = dropdownMenu.style.display === "block" ? "none" : "block";
+                    };
+                    document.body.addEventListener("click", function () {
+                        dropdownMenu.style.display = "none";
+                    });
+
+                    dropdownLogout.onclick = function () {
+                        localStorage.removeItem("loggedInUser");
+                        window.location.href = "login.html";
+                    };
+                    dropdownLogin.onclick = function () {
+                        window.location.href = "login.html";
+                    };
+                </script>
+                <!-- Toggler for mobile -->
+                <button style="margin-left:auto; background:none; border:none; display:none;" class="navbar-toggler"
+                    type="button">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                <button class="btn" id="openModalBtn">Report New Incident</button>
+                <button class="btn" id="reportBtn">View Report</button>
+                <button class="btn" id="weatherBtn">Weather</button>
+            </div>
+            <div
+                style="margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; color: #fff;">
+                <div id="currentDate" style="font-weight: bold;"></div>
+                <div id="currentTime" style="font-weight: bold;"></div>
+            </div>
+        </div>
+        <div id="map"></div>
+        <!-- You can add more dashboard content here -->
+        <style>
+            @media (max-width: 700px) {
+                main>div:first-child {
+                    flex-direction: column !important;
+                    align-items: stretch !important;
+                    gap: 0.7rem !important;
+                }
+
+                main>div:first-child>div:last-child {
+                    align-items: flex-start !important;
+                    margin-left: 0 !important;
+                }
+
+                #map {
+                    height: 250px !important;
+                }
+            }
+
+            @media (max-width: 480px) {
+                #map {
+                    height: 180px !important;
+                }
+
+                .btn {
+                    width: 100%;
+                    margin-bottom: 0.5rem;
+                }
+            }
+        </style>
+    </main>
+
+    <!-- Weather Modal -->
+    <div id="weatherModal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1002; align-items:center; justify-content:center;">
+        <div
+            style="background:#223d22; color:#fff; border:2px solid #ffd600; padding:2rem; border-radius:8px; max-width:350px; width:90%; position:relative;">
+            <h3 style="margin-top:0; color:#ffd600;">Weather Information</h3>
+            <button id="closeWeatherModal"
+                style="position:absolute; top:1rem; right:1rem; background:#ffd600; color:#145a32; border:none; border-radius:50%; width:32px; height:32px; font-size:1.2rem; cursor:pointer;">&times;</button>
+            <div id="weatherContent">
+                <p>Loading weather...</p>
+            </div>
+        </div>
+    </div>
+    <div id="incidentModal">
+        <div>
+            <h3>Report New Incident</h3>
+            <form id="modalForm" enctype="multipart/form-data">
+                <label>Category:
+                    <select id="modalCategory" required>
+                        <option value="">Select</option>
+                        <option value="Flood">Flood</option>
+                        <option value="Earthquake">Earthquake</option>
+                        <option value="Fire Outbreak">Fire Outbreak</option>
+                        <option value="Typhoon">Typhoon</option>
+                        <option value="Landslide">Landslide</option>
+                        <option value="Tsunami">Tsunami</option>
+                        <option value="Volcanic Eruption">Volcanic Eruption</option>
+                        <option value="Drought">Drought</option>
+                        <option value="Vehicular Accident">Vehicular Accident</option>
+                        <option value="Medical Emergency">Medical Emergency</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </label>
+                <br><br>
+                <label>Purok:<br>
+                    <input type="text" id="modalPurok" required>
+                </label>
+                <br><br>
+                <label>Street:<br>
+                    <input type="text" id="modalStreet" required>
+                </label>
+                <br><br>
+                <label>Barangay:<br>
+                    <input type="text" id="modalBarangay" required>
+                </label>
+                <br><br>
+                <label>Description:<br>
+                    <textarea id="modalDescription" rows="3" required></textarea>
+                </label>
+                <br><br>
+                <label>Image:<br>
+                    <input type="file" id="modalImage" accept="image/*">
+                    <div id="imagePreview" style="margin-top:8px;"></div>
+                </label>
+                <br>
+                <input type="hidden" id="modalLat">
+                <input type="hidden" id="modalLng">
+                <button type="submit">Save</button>
+                <button type="button" id="modalCancel" style="margin-left:1rem;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reportModal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1001; align-items:center; justify-content:center;">
+        <div
+            style="background:#fff; padding:2rem; border-radius:8px; max-width:600px; width:95%; max-height:80vh; overflow:auto; position:relative;">
+            <h3 style="margin-top:0; color:#1976d2;">Reported Incidents</h3>
+            <button id="closeReportModal"
+                style="position:absolute; top:1rem; right:1rem; background:#eee; border:none; border-radius:50%; width:32px; height:32px; font-size:1.2rem; cursor:pointer;">&times;</button>
+            <div id="reportList"></div>
+        </div>
+    </div>
+    <script>
+        // Report Modal logic
+        const reportBtn = document.getElementById('reportBtn');
+        const reportModal = document.getElementById('reportModal');
+        const closeReportModal = document.getElementById('closeReportModal');
+        const reportList = document.getElementById('reportList');
+
+        reportBtn.onclick = function () {
+            // Load incidents from localStorage
+            let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+            // Filter incidents for current user
+            let userIncidents = incidents.filter(inc => inc.id === loggedInUser.id);
+            if (userIncidents.length === 0) {
+                reportList.innerHTML = "<p>No incidents reported yet.</p>";
+            } else {
+                reportList.innerHTML = `
+                <div style="max-height:400px; overflow-y:auto;">
+                    <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                    <tr style="background:#f0f0f0;">
+                    <th style="padding:8px; border:1px solid #ddd;">Category</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Description</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Purok</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Street</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Barangay</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Date</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Location</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    ${userIncidents.map((inc, idx) => `
+                    <tr>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.category}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.description}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.purok}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.street}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.barangay}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${new Date(inc.date).toLocaleString()}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">Lat: ${parseFloat(inc.lat).toFixed(5)}, Lng: ${parseFloat(inc.lng).toFixed(5)}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">
+                        <button class="updateBtn" data-idx="${incidents.indexOf(inc)}" style="background:#1976d2; color:#fff; border:none; border-radius:4px; padding:4px 10px; cursor:pointer;">Update</button>
+                    </td>
+                    </tr>
+                    `).join('')}
+                    </tbody>
+                    </table>
+                </div>`;
+            }
+
+            // Make report modal larger
+            reportModal.querySelector('div').style.maxWidth = '90vw';
+            reportModal.querySelector('div').style.width = '98%';
+            reportModal.style.display = 'flex';
+
+            // Add event listeners for update buttons
+            document.querySelectorAll('.updateBtn').forEach(btn => {
+                btn.onclick = function () {
+                    const idx = this.getAttribute('data-idx');
+                    const inc = incidents[idx];
+                    // Fill modal with incident data
+                    document.getElementById('modalCategory').value = inc.category;
+                    document.getElementById('modalDescription').value = inc.description;
+                    document.getElementById('modalPurok').value = inc.purok;
+                    document.getElementById('modalStreet').value = inc.street;
+                    document.getElementById('modalBarangay').value = inc.barangay;
+                    document.getElementById('modalLat').value = inc.lat;
+                    document.getElementById('modalLng').value = inc.lng;
+                    // Remove marker if exists and add new marker
+                    if (window.marker) {
+                        map.removeLayer(window.marker);
+                        window.marker = null;
+                    }
+                    window.marker = L.marker([inc.lat, inc.lng]).addTo(map);
+                    // Show modal
+                    incidentModal.style.display = 'flex';
+                    // On submit, update the incident
+                    modalForm.onsubmit = function (e) {
+                        e.preventDefault();
+                        // Collect updated data
+                        const category = document.getElementById('modalCategory').value;
+                        const description = document.getElementById('modalDescription').value;
+                        const purok = document.getElementById('modalPurok').value;
+                        const street = document.getElementById('modalStreet').value;
+                        const barangay = document.getElementById('modalBarangay').value;
+                        const lat = document.getElementById('modalLat').value;
+                        const lng = document.getElementById('modalLng').value;
+                        if (!lat || !lng) {
+                            alert('Please select a location on the map.');
+                            return;
+                        }
+                        // Update incident
+                        incidents[idx] = {
+                            ...incidents[idx],
+                            category,
+                            description,
+                            purok,
+                            street,
+                            barangay,
+                            lat,
+                            lng
+                        };
+                        localStorage.setItem('incidents', JSON.stringify(incidents));
+                        alert('Incident updated!');
+                        incidentModal.style.display = 'none';
+                        modalForm.reset();
+                        reportModal.style.display = 'none';
+                        location.reload(); // Reload to update map markers
+                    };
+                };
+            });
+        };
+
+        closeReportModal.onclick = function () {
+            reportModal.style.display = 'none';
+        };
+
+        window.addEventListener('click', function (e) {
+            if (e.target === reportModal) {
+                reportModal.style.display = 'none';
+            }
+        });
+    </script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Modal open/close logic
+        const openModalBtn = document.getElementById('openModalBtn');
+        const incidentModal = document.getElementById('incidentModal');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalForm = document.getElementById('modalForm');
+        const modalLat = document.getElementById('modalLat');
+        const modalLng = document.getElementById('modalLng');
+
+        openModalBtn.onclick = () => {
+            incidentModal.style.display = 'flex';
+            modalLat.value = '';
+            modalLng.value = '';
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+        };
+        modalCancel.onclick = () => {
+            incidentModal.style.display = 'none';
+            modalForm.reset();
+        };
+        window.onclick = (e) => {
+            if (e.target === incidentModal) {
+                incidentModal.style.display = 'none';
+                modalForm.reset();
+            }
+        };
+
+        // Map logic
+        let map = L.map('map').setView([10.88015256475575, 123.4027104654905], 12); // Centered on Philippines
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // Make the map larger by increasing its height
+        document.getElementById('map').style.height = '500px';
+        map.invalidateSize();
+
+        let marker = null;
+
+        map.on('click', function (e) {
+            // Show modal and set lat/lng
+            incidentModal.style.display = 'flex';
+            modalLat.value = e.latlng.lat;
+            modalLng.value = e.latlng.lng;
+
+            // Add or move marker
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+        });
+
+        // Haversine formula to compute distance in km
+        function haversine(lat1, lng1, lat2, lng2) {
+            function toRad(x) { return x * Math.PI / 180; }
+            const R = 6371; // km
+            const dLat = toRad(lat2 - lat1);
+            const dLng = toRad(lng2 - lng1);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        // Reference points
+        const refLat1 = 10.89780476100566;
+        const refLng1 = 123.41673706252892;
+        const refLat2 = 10.87904106168548;
+        const refLng2 = 123.41239035245202;
+
+        // Load and display all incidents from localStorage for the current user
+        function loadIncidents() {
+            let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+            // Only show incidents reported by the logged-in user if loggedInUser exists
+            let userIncidents = [];
+            if (loggedInUser && loggedInUser.id) {
+                userIncidents = incidents.filter(inc => inc.id === loggedInUser.id);
+            }
+            userIncidents.forEach(incident => {
+                const dist1 = haversine(refLat1, refLng1, parseFloat(incident.lat), parseFloat(incident.lng));
+                const dist2 = haversine(refLat2, refLng2, parseFloat(incident.lat), parseFloat(incident.lng));
+                let popupHtml = `
+                    <b>${incident.category}</b><br>
+                    ${incident.description}<br>
+                    <small>${new Date(incident.date).toLocaleString()}</small><br>
+                    <b>Distance from Fire Station:</b> ${dist1.toFixed(2)} km<br>
+                    <b>Distance from Police Station:</b> ${dist2.toFixed(2)} km
+                `;
+                if (incident.image) {
+                    popupHtml += `<br><img src="${incident.image}" alt="Incident Image" style="max-width:200px;max-height:200px;margin-top:6px;border-radius:4px;border:1px solid #ffd600;">`;
+                }
+                L.marker([incident.lat, incident.lng])
+                    .addTo(map)
+                    .bindPopup(popupHtml);
+            });
+        }
+
+        loadIncidents();
+
+        const modalImage = document.getElementById('modalImage');
+        const imagePreview = document.getElementById('imagePreview');
+        let imageDataUrl = "";
+
+        modalImage.onchange = function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    imageDataUrl = evt.target.result;
+                    imagePreview.innerHTML = `<img src="${imageDataUrl}" alt="Preview" style="max-width:100%;max-height:120px;border-radius:4px;border:1px solid #ffd600;">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imageDataUrl = "";
+                imagePreview.innerHTML = "";
+            }
+        };
+
+        modalForm.onsubmit = (e) => {
+            e.preventDefault();
+            // Collect data
+            const category = document.getElementById('modalCategory').value;
+            const description = document.getElementById('modalDescription').value;
+            const purok = document.getElementById('modalPurok').value;
+            const street = document.getElementById('modalStreet').value;
+            const barangay = document.getElementById('modalBarangay').value;
+            const lat = modalLat.value;
+            const lng = modalLng.value;
+
+            if (!lat || !lng) {
+                alert('Please select a location on the map.');
+                return;
+            }
+
+            // Save to localStorage
+            const incident = { id: loggedInUser.id, category, description, purok, street, barangay, lat, lng, date: new Date().toISOString(), image: imageDataUrl || "" };
+            let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+            incidents.push(incident);
+            localStorage.setItem('incidents', JSON.stringify(incidents));
+
+            alert('Incident reported!');
+            incidentModal.style.display = 'none';
+            modalForm.reset();
+            imagePreview.innerHTML = "";
+            imageDataUrl = "";
+
+
+            // Add marker for the new incident
+            const dist1 = haversine(refLat1, refLng1, parseFloat(lat), parseFloat(lng));
+            const dist2 = haversine(refLat2, refLng2, parseFloat(lat), parseFloat(lng));
+            L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup(
+                    `<b>${category}</b><br>${description}<br><small>${new Date(incident.date).toLocaleString()}</small><br><b>Distance from Fire Station:</b> ${dist1.toFixed(2)} km<br><b>Distance from Police Station:</b> ${dist2.toFixed(2)} km`
+                );
+
+            marker = null;
+        };
+
+        setTimeout(function () {
+            var alertElement = document.getElementById('tempAlert');
+            if (alertElement) {
+                alertElement.style.display = 'none';
+            }
+        }, 5000);
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('currentDate').textContent = now.toLocaleDateString(undefined, options);
+            document.getElementById('currentTime').textContent = time;
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime(); // Initial call
+
+        // Auto-hide the error alert after 5 seconds
+        setTimeout(function () {
+            var alertElement = document.getElementById('errorAlert');
+            if (alertElement) {
+                alertElement.style.display = 'none';
+            }
+        }, 2000); // 5000 milliseconds = 5 seconds
+
+
+        // Weather Modal logic (5-day forecast)
+        const weatherBtn = document.getElementById('weatherBtn');
+        const weatherModal = document.getElementById('weatherModal');
+        const closeWeatherModal = document.getElementById('closeWeatherModal');
+        const weatherContent = document.getElementById('weatherContent');
+
+        weatherBtn.onclick = function () {
+            weatherModal.style.display = 'flex';
+            weatherContent.innerHTML = "<p>Loading weather...</p>";
+            // Fetch 5-day forecast from wttr.in (returns 6 days, we use 5)
+            fetch('https://wttr.in/Sagay?format=j1')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.weather || !Array.isArray(data.weather)) {
+                        weatherContent.innerHTML = "<p>Unable to fetch weather data.</p>";
+                        return;
+                    }
+                    let html = `
+                <h4 style="color:#ffd600; margin-bottom:0.7rem;">5-Day Forecast</h4>
+                <div style="
+                display:flex; 
+                flex-direction:column; 
+                gap:0.7rem; 
+                max-height:260px; 
+                overflow-y:auto; 
+                padding-right:8px;
+                scrollbar-width:thin;
+                scrollbar-color:#ffd600 #223d22;
+                " id="weatherScroll">
+            `;
+                    data.weather.slice(0, 5).forEach(day => {
+                        html += `
+                <div style="
+                    border-bottom:1px solid #ffd600; 
+                    padding-bottom:0.5rem; 
+                    padding-top:0.5rem;
+                    background:rgba(34,61,34,0.7);
+                    border-radius:4px;
+                ">
+                    <b style="color:#ffd600;">${day.date}</b><br>
+                    <span>Condition: <span style="color:#ffd600;">${day.hourly[4].weatherDesc[0].value}</span></span><br>
+                    <span>Temp: <span style="color:#ffd600;">${day.maxtempC}°C</span> / <span style="color:#ffd600;">${day.mintempC}°C</span></span><br>
+                    <span>Wind: <span style="color:#ffd600;">${day.hourly[4].windspeedKmph} km/h</span></span>
+                </div>
+                `;
+                    });
+                    html += '</div>';
+                    weatherContent.innerHTML = html;
+
+                    // Optional: Custom scrollbar styling for modern browsers
+                    const weatherScroll = document.getElementById('weatherScroll');
+                    if (weatherScroll) {
+                        weatherScroll.style.scrollbarWidth = 'thin';
+                        weatherScroll.style.scrollbarColor = '#ffd600 #223d22';
+                    }
+                })
+                .catch(() => {
+                    weatherContent.innerHTML = "<p>Unable to fetch weather data.</p>";
+                });
+        };
+        closeWeatherModal.onclick = function () {
+            weatherModal.style.display = 'none';
+        };
+        window.addEventListener('click', function (e) {
+            if (e.target === weatherModal) {
+                weatherModal.style.display = 'none';
+            }
+        });
+        // Logout button logic
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.onclick = function () {
+                //localStorage.clear();
+                // Redirect to login page (replace 'login.html' with your actual login page)
+                window.location.href = 'login.html';
+            };
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Registration Form</title>
+  <style>
+    body {
+      background: #1b3a1b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    .form-container {
+      background: #223322;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+      width: 370px;
+      border: 2px solid #ffe066;
+    }
+
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .logo img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #ffe066;
+      background: #ffe066;
+      object-fit: cover;
+    }
+
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ffe066;
+      letter-spacing: 1px;
+    }
+
+    .form-container input,
+    .form-container select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      box-sizing: border-box;
+      background: #2d4d2d;
+      border: 1px solid #ffe066;
+      border-radius: 5px;
+      color: #ffe066;
+      font-size: 15px;
+    }
+
+    .form-container input::placeholder {
+      color: #ffe066b0;
+    }
+
+    .form-container select {
+      color: #223322;
+      background: #ffe066;
+    }
+
+    .form-container button {
+      width: 100%;
+      padding: 10px;
+      background: #2d4d2d;
+      color: #ffe066;
+      border: 2px solid #ffe066;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .form-container button:hover {
+      background: #ffe066;
+      color: #1b3a1b;
+    }
+
+    #message {
+      margin-top: 10px;
+      color: #ffe066;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .category-label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+      color: #ffe066;
+      letter-spacing: 0.5px;
+    }
+
+    .login-btn {
+      margin-top: 10px;
+      background: #ffe066 !important;
+      color: #1b3a1b !important;
+      border: 2px solid #ffe066 !important;
+      font-weight: bold;
+      transition: background 0.2s, color 0.2s;
+    }
+    .login-btn:hover {
+      background: #2d4d2d !important;
+      color: #ffe066 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <div class="logo">
+      <!-- Replace src with your logo path if needed -->
+      <img src="https://negrosfest.wordpress.com/wp-content/uploads/2016/01/download-51.jpeg?w=272&h=272" alt="Logo">
+    </div>
+    <h2>Register</h2>
+    <form id="registerForm">
+      <span class="category-label">Login Info</span>
+      <input type="text" id="regUsername" placeholder="Username" required>
+      <input type="password" id="regPassword" placeholder="Password" required>
+
+      <span class="category-label">Personal Info</span>
+      <input type="text" id="fullName" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email Address" required>
+      <input type="text" id="contact" placeholder="Contact Number" required>
+      <select id="gender" required>
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <button type="submit">Register</button>
+      <p id="message"></p>
+    </form>
+    <button class="login-btn" onclick="window.location.href='login.html'">Login</button>
+  </div>
+
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const newUsername = document.getElementById("regUsername").value.trim();
+      const newPassword = document.getElementById("regPassword").value;
+      const fullName = document.getElementById("fullName").value;
+      const email = document.getElementById("email").value;
+      const contact = document.getElementById("contact").value;
+      const gender = document.getElementById("gender").value;
+      const message = document.getElementById("message");
+
+      // Retrieve users array from localStorage or initialize empty array
+      let users = [];
+      try {
+        const storedUsers = JSON.parse(localStorage.getItem("user"));
+        if (Array.isArray(storedUsers)) {
+          users = storedUsers;
+        }
+      } catch (e) {
+        users = [];
+      }
+
+      // Check if username already exists
+      const usernameExists = users.some(user => user.username === newUsername);
+
+      if (usernameExists) {
+        message.style.color = "#ffe066";
+        message.textContent = "Username already exists. Please choose another.";
+        return;
+      }
+
+      // Generate a unique id (timestamp + random)
+      const userId = 'user_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+
+      if (newUsername && newPassword && fullName && email && contact && gender) {
+        const userData = {
+          id: userId,
+          username: newUsername,
+          password: newPassword,
+          fullName: fullName,
+          email: email,
+          contact: contact,
+          gender: gender
+        };
+
+        users.push(userData);
+        localStorage.setItem("user", JSON.stringify(users));
+        message.style.color = "#ffe066";
+        message.textContent = "Registration successful! Redirecting to login...";
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1500);
+      } else {
+        message.style.color = "#ffe066";
+        message.textContent = "All fields are required.";
+      }
+    });
+  </script>
+</body>
+</html>
