@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Login Form</title>
     <style>
+        /* ====== General Body Styles ====== */
         body {
             background: #1b3a1b; /* dark green */
             display: flex;
@@ -13,6 +14,7 @@
             font-family: Arial, sans-serif;
         }
 
+        /* ====== Login Container Styles ====== */
         .login-container {
             background: #fffde7; /* light yellow */
             padding: 30px;
@@ -22,6 +24,7 @@
             border: 2px solid #388e3c; /* dark green border */
         }
 
+        /* ====== Logo Styles ====== */
         .logo {
             display: flex;
             justify-content: center;
@@ -36,12 +39,14 @@
             padding: 6px;
         }
 
+        /* ====== Heading Styles ====== */
         .login-container h2 {
             text-align: center;
             margin-bottom: 18px;
             color: #388e3c; /* dark green */
         }
 
+        /* ====== Input Styles ====== */
         .login-container input {
             width: 100%;
             padding: 10px;
@@ -52,13 +57,13 @@
             background: #fffde7;
             color: #1b3a1b;
         }
-
         .login-container input:focus {
             outline: none;
             border-color: #ffd600; /* yellow */
             background: #fffde7;
         }
 
+        /* ====== Button Styles ====== */
         .login-container button {
             width: 100%;
             padding: 10px;
@@ -70,17 +75,18 @@
             font-weight: bold;
             transition: background 0.2s;
         }
-
         .login-container button:hover {
             background: #1b5e20;
         }
 
+        /* ====== Message Styles ====== */
         #message {
             margin-top: 10px;
             color: red;
             text-align: center;
         }
 
+        /* ====== Register Button Styles ====== */
         .register-btn {
             margin-top: 10px;
             background: #ffd600 !important; /* yellow */
@@ -95,53 +101,67 @@
     </style>
 </head>
 <body>
-<div class="login-container">
+    <div class="login-container">
+        <!-- Logo Section -->
         <div class="logo">
             <!-- Replace src with your logo path if needed -->
             <img src="https://negrosfest.wordpress.com/wp-content/uploads/2016/01/download-51.jpeg?w=272&h=272" alt="Logo">
         </div>
+        <!-- Login Heading -->
         <h2>Login</h2>
+        <!-- Login Form -->
         <form id="loginForm">
-                <input type="text" id="username" placeholder="Username" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <button type="submit">Login</button>
-                <p id="message"></p>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+            <p id="message"></p>
         </form>
+        <!-- Register Button -->
         <button type="button" class="register-btn" onclick="window.location.href='registration.html'">
-                Register
+            Register
         </button>
-</div>
+    </div>
 
     <script>
-        // Create default login credentials (can be skipped after first time)
+        // ====== Initialize Default User (only if not present) ======
         if (!localStorage.getItem("user")) {
             localStorage.setItem("user", JSON.stringify([
                 { id: 1, username: "admin", password: "1234" }
             ]));
         }
 
+        // ====== Login Form Submission Handler ======
         document.getElementById("loginForm").addEventListener("submit", function(e) {
             e.preventDefault();
 
+            // Get entered credentials
             const enteredUsername = document.getElementById("username").value;
             const enteredPassword = document.getElementById("password").value;
             const users = JSON.parse(localStorage.getItem("user")) || [];
             const message = document.getElementById("message");
 
+            // Check if user exists with matching credentials
             const foundUser = users.find(
                 user => user.username === enteredUsername && user.password === enteredPassword
             );
 
             if (foundUser) {
-                // Save logged-in user id and username to localStorage for dashboard
+                // Save logged-in user info for dashboard use
                 localStorage.setItem("loggedInUser", JSON.stringify({ id: foundUser.id, username: foundUser.username }));
 
+                // Show success message and redirect
                 message.style.color = "#388e3c";
                 message.textContent = "Login successful! Redirecting...";
                 setTimeout(() => {
-                    window.location.href = "dashboard.html";
+                    // Redirect admin1 to admin dashboard, others to user dashboard
+                    if (foundUser.username === "admin1") {
+                        window.location.href = "admin_dashboard.html";
+                    } else {
+                        window.location.href = "dashboard.html";
+                    }
                 }, 1000);
             } else {
+                // Show error message
                 message.style.color = "red";
                 message.textContent = "Invalid username or password.";
             }
