@@ -1,219 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Registration Form</title>
-  <style>
-    /* Page background and centering */
-    body {
-      background: #1b3a1b;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <title>Login Form</title>
+    <style>
+        /* ====== General Body Styles ====== */
+        body {
+            background: #1b3a1b; /* dark green */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
 
-    /* Registration form container styling */
-    .form-container {
-      background: #223322;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.18);
-      width: 370px;
-      border: 2px solid #ffe066;
-    }
+        /* ====== Login Container Styles ====== */
+        .login-container {
+            background: #fffde7; /* light yellow */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(27,58,27,0.15);
+            width: 320px;
+            border: 2px solid #388e3c; /* dark green border */
+        }
 
-    /* Logo styling */
-    .logo {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 18px;
-    }
-    .logo img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 3px solid #ffe066;
-      background: #ffe066;
-      object-fit: cover;
-    }
+        /* ====== Logo Styles ====== */
+        .logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .logo img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid #ffd600; /* yellow border */
+            background: #fffde7;
+            padding: 6px;
+        }
 
-    /* Heading styling */
-    .form-container h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #ffe066;
-      letter-spacing: 1px;
-    }
+        /* ====== Heading Styles ====== */
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 18px;
+            color: #388e3c; /* dark green */
+        }
 
-    /* Input and select styling */
-    .form-container input,
-    .form-container select {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      box-sizing: border-box;
-      background: #2d4d2d;
-      border: 1px solid #ffe066;
-      border-radius: 5px;
-      color: #ffe066;
-      font-size: 15px;
-    }
+        /* ====== Input Styles ====== */
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1.5px solid #388e3c;
+            border-radius: 5px;
+            background: #fffde7;
+            color: #1b3a1b;
+        }
+        .login-container input:focus {
+            outline: none;
+            border-color: #ffd600; /* yellow */
+            background: #fffde7;
+        }
 
-    .form-container input::placeholder {
-      color: #ffe066b0;
-    }
+        /* ====== Button Styles ====== */
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background: #388e3c; /* dark green */
+            color: #ffd600; /* yellow */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .login-container button:hover {
+            background: #1b5e20;
+        }
 
-    .form-container select {
-      color: #223322;
-      background: #ffe066;
-    }
+        /* ====== Message Styles ====== */
+        #message {
+            margin-top: 10px;
+            color: red;
+            text-align: center;
+        }
 
-    /* Register button styling */
-    .form-container button {
-      width: 100%;
-      padding: 10px;
-      background: #2d4d2d;
-      color: #ffe066;
-      border: 2px solid #ffe066;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .form-container button:hover {
-      background: #ffe066;
-      color: #1b3a1b;
-    }
-
-    /* Message styling */
-    #message {
-      margin-top: 10px;
-      color: #ffe066;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    /* Category label styling */
-    .category-label {
-      font-weight: bold;
-      margin-top: 15px;
-      display: block;
-      color: #ffe066;
-      letter-spacing: 0.5px;
-    }
-
-    /* Login button styling */
-    .login-btn {
-      margin-top: 10px;
-      background: #ffe066 !important;
-      color: #1b3a1b !important;
-      border: 2px solid #ffe066 !important;
-      font-weight: bold;
-      transition: background 0.2s, color 0.2s;
-    }
-    .login-btn:hover {
-      background: #2d4d2d !important;
-      color: #ffe066 !important;
-    }
-  </style>
+        /* ====== Register Button Styles ====== */
+        .register-btn {
+            margin-top: 10px;
+            background: #ffd600 !important; /* yellow */
+            color: #1b3a1b !important; /* dark green */
+            border: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .register-btn:hover {
+            background: #ffe082 !important;
+        }
+    </style>
 </head>
 <body>
-  <div class="form-container">
-    <div class="logo">
-      <!-- Replace src with your logo path if needed -->
-      <img src="https://negrosfest.wordpress.com/wp-content/uploads/2016/01/download-51.jpeg?w=272&h=272" alt="Logo">
+    <div class="login-container">
+        <!-- Logo Section -->
+        <div class="logo">
+            <!-- Replace src with your logo path if needed -->
+            <img src="https://negrosfest.wordpress.com/wp-content/uploads/2016/01/download-51.jpeg?w=272&h=272" alt="Logo">
+        </div>
+        <!-- Login Heading -->
+        <h2>Login</h2>
+        <!-- Login Form -->
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+            <p id="message"></p>
+        </form>
+        <!-- Forgot Password Link -->
+        <div style="text-align:center; margin-top:10px;">
+            <a href="#" id="forgotPasswordLink" style="color:#388e3c; text-decoration:underline; font-size: 0.95em;">Forgot Password?</a>
+        </div>
+        <!-- Forgot Password Modal -->
+        <div id="forgotPasswordModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); justify-content:center; align-items:center;">
+            <div style="background:#fffde7; padding:24px 20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15); min-width:260px; max-width:90vw;">
+                <h3 style="color:#388e3c; margin-top:0;">Forgot Password</h3>
+                <form id="forgotPasswordForm">
+                    <input type="email" id="forgotEmail" placeholder="Enter your email" required style="margin-bottom:10px;">
+                    <button type="submit" style="background:#388e3c; color:#ffd600; margin-bottom:8px;">Send Reset Link</button>
+                    <div id="forgotMessage" style="text-align:center; font-size:0.95em;"></div>
+                </form>
+                <button type="button" onclick="document.getElementById('forgotPasswordModal').style.display='none'" style="margin-top:8px; background:#ffd600; color:#1b3a1b;">Close</button>
+            </div>
+        </div>
+        <!-- Register Button -->
+        <button type="button" class="register-btn" onclick="window.location.href='registration.html'">
+            Register
+        </button>
     </div>
-    <h2>Register</h2>
-    <form id="registerForm">
-      <span class="category-label">Login Info</span>
-      <input type="text" id="regUsername" placeholder="Username" required>
-      <input type="password" id="regPassword" placeholder="Password" required>
-
-      <span class="category-label">Personal Info</span>
-      <input type="text" id="fullName" placeholder="Full Name" required>
-      <input type="email" id="email" placeholder="Email Address" required>
-      <input type="text" id="contact" placeholder="Contact Number" required>
-      <select id="gender" required>
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
-
-      <button type="submit">Register</button>
-      <p id="message"></p>
-    </form>
-    <button class="login-btn" onclick="window.location.href='login.html'">Login</button>
-  </div>
-
-  <script>
-    // Handle registration form submission
-    document.getElementById("registerForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      // Get form values
-      const newUsername = document.getElementById("regUsername").value.trim();
-      const newPassword = document.getElementById("regPassword").value;
-      const fullName = document.getElementById("fullName").value;
-      const email = document.getElementById("email").value;
-      const contact = document.getElementById("contact").value;
-      const gender = document.getElementById("gender").value;
-      const message = document.getElementById("message");
-
-      // Retrieve users array from localStorage or initialize empty array
-      let users = [];
-      try {
-        const storedUsers = JSON.parse(localStorage.getItem("user"));
-        if (Array.isArray(storedUsers)) {
-          users = storedUsers;
-        }
-      } catch (e) {
-        users = [];
-      }
-
-      // Check if username already exists
-      const usernameExists = users.some(user => user.username === newUsername);
-
-      if (usernameExists) {
-        message.style.color = "#ffe066";
-        message.textContent = "Username already exists. Please choose another.";
-        return;
-      }
-
-      // Generate a unique id (timestamp + random)
-      const userId = 'user_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-
-      // Validate all fields
-      if (newUsername && newPassword && fullName && email && contact && gender) {
-        // Create user data object
-        const userData = {
-          id: userId,
-          username: newUsername,
-          password: newPassword,
-          fullName: fullName,
-          email: email,
-          contact: contact,
-          gender: gender,
-          role : "User" // Default role
+    <script>
+        // Forgot Password Modal Logic
+        document.getElementById('forgotPasswordLink').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('forgotPasswordModal').style.display = 'flex';
+            document.getElementById('forgotMessage').textContent = '';
+            document.getElementById('forgotEmail').value = '';
         };
+        document.getElementById('forgotPasswordForm').onsubmit = function(e) {
+            e.preventDefault();
+            var email = document.getElementById('forgotEmail').value.trim();
+            var forgotMessage = document.getElementById('forgotMessage');
+            if(email) {
+                forgotMessage.style.color = "#388e3c";
+                forgotMessage.textContent = "If this email is registered, a reset link will be sent.";
+                setTimeout(function() {
+                    // Open Gmail compose with correct TO, subject, and message body
+                    var subject = encodeURIComponent("Password Reset Request");
+                    var body = encodeURIComponent("Hello,\n\nI would like to request a password reset for my account.\n\nThank you.");
+                    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=marjoe.aguilar18@gmail.com&su=' + subject + '&body=' + body, '_blank');
+                }, 1500);
+            } else {
+                forgotMessage.style.color = "red";
+                forgotMessage.textContent = "Please enter your email.";
+            }
+        };
+    </script>
 
-        // Add new user and save to localStorage
-        users.push(userData);
-        localStorage.setItem("user", JSON.stringify(users));
-        message.style.color = "#ffe066";
-        message.textContent = "Registration successful! Redirecting to login...";
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 1500);
-      } else {
-        message.style.color = "#ffe066";
-        message.textContent = "All fields are required.";
-      }
-    });
-  </script>
+    <script>
+        // ====== Initialize Default User (only if not present) ======
+        if (!localStorage.getItem("user")) {
+            localStorage.setItem("user", JSON.stringify([
+                { id: 1, username: "admin", password: "1234" }
+            ]));
+        }
+
+        // ====== Login Form Submission Handler ======
+        document.getElementById("loginForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            // Get entered credentials
+            const enteredUsername = document.getElementById("username").value;
+            const enteredPassword = document.getElementById("password").value;
+            const users = JSON.parse(localStorage.getItem("user")) || [];
+            const message = document.getElementById("message");
+
+            // Check if user exists with matching credentials
+            const foundUser = users.find(
+                user => user.username === enteredUsername && user.password === enteredPassword
+            );
+
+            if (foundUser) {
+                // Show success message and redirect
+                message.style.color = "#388e3c";
+                message.textContent = "Login successful! Redirecting...";
+                setTimeout(() => {
+                    // Redirect to admin dashboard if role is 'admin', else to user dashboard
+                    
+                        // Save logged-in user info for dashboard use
+                        localStorage.setItem("loggedInUser", JSON.stringify({ id: foundUser.id, username: foundUser.username, email: foundUser.email || "" }));
+                        window.location.href = "dashboard.html";
+                    
+                }, 1000);
+            } else if(enteredUsername.toLowerCase() === "admin" && enteredPassword === "1234"){
+                 // Show success message and redirect
+                message.style.color = "#388e3c";
+                message.textContent = "Login successful! Redirecting...";
+                setTimeout(() => {
+                    // Redirect to admin dashboard if role is 'admin', else to user dashboard
+                    // Save logged-in user info for dashboard use
+                    localStorage.setItem("loggedInUser", JSON.stringify({ id: "admin_123456789", username: enteredUsername, email: "admin@test.com" }));
+                    // Redirect to admin dashboard
+                    window.location.href = "admin_dashboard.html";
+                }, 1000);
+            }else {
+                // Show error message
+                message.style.color = "red";
+                message.textContent = "Invalid username or password.";
+            }
+        });
+    </script>
 </body>
 </html>
