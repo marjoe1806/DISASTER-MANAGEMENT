@@ -198,7 +198,8 @@
                     <img src="https://negrosfest.wordpress.com/wp-content/uploads/2016/01/download-51.jpeg?w=272&h=272"
                         alt="Barangay System Logo" width="100" height="100"
                         style="margin-right:0.5rem; border-radius:50%;">
-                    <span style="font-size:1.1rem; font-weight:bold; color:#fff;">SAGAY CITY EMERGENCY RESPONSE AND MAPPING SYSTEM</span>
+                    <span style="font-size:1.1rem; font-weight:bold; color:#fff;">SAGAY CITY EMERGENCY RESPONSE AND
+                        MAPPING SYSTEM</span>
                 </a>
                 <div style="margin-left: auto; position: relative; display: flex; align-items: center;">
                     <div id="userDropdown" style="position: relative;">
@@ -305,6 +306,19 @@
                 <button class="btn" id="reportBtn">View Report</button>
                 <button class="btn" id="weatherBtn">Weather</button>
                 <button class="btn" id="analyticsBtn">Analytics</button>
+                <button class="btn" id="usersBtn">Users</button>
+
+                <!-- Users Modal -->
+                <div id="usersModal"
+                    style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1004; align-items:center; justify-content:center;">
+                    <div
+                        style="background:#223d22; color:#fff; border:2px solid #ffd600; padding:2.5rem; border-radius:10px; max-width:1200px; width:98vw; min-width:340px; position:relative; box-shadow:0 8px 40px rgba(0,0,0,0.28);">
+                        <h3 style="margin-top:0; color:#ffd600; font-size:2rem;">Registered Users</h3>
+                        <button id="closeUsersModal"
+                            style="position:absolute; top:1rem; right:1rem; background:#ffd600; color:#145a32; border:none; border-radius:50%; width:38px; height:38px; font-size:1.4rem; cursor:pointer;">&times;</button>
+                        <div id="usersList" style="margin-top:2rem; max-height:600px; overflow-y:auto;"></div>
+                    </div>
+                </div>
                 <!-- Analytics Modal -->
                 <div id="analyticsModal"
                     style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1003; align-items:center; justify-content:center;">
@@ -360,7 +374,18 @@
                 .btn {
                     width: 100%;
                     margin-bottom: 0.5rem;
+                    min-width: 100%;
                 }
+            }
+
+            .btn {
+                min-width: 160px;
+                height: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+                box-sizing: border-box;
             }
         </style>
     </main>
@@ -378,6 +403,7 @@
             </div>
         </div>
     </div>
+
     <div id="incidentModal">
         <div>
             <h3>Report New Incident</h3>
@@ -399,16 +425,22 @@
                     </select>
                 </label>
                 <br><br>
+                <label>Barangay:<br>
+                    <select id="modalBarangay" required>
+                        <option value="">Select Barangay</option>
+                    </select>
+                </label>
+                <br><br>
                 <label>Purok:<br>
-                    <input type="text" id="modalPurok" required>
+                    <select id="modalPurok" required>
+                        <option value="">Select Purok</option>
+                    </select>
                 </label>
                 <br><br>
                 <label>Street:<br>
-                    <input type="text" id="modalStreet" required>
-                </label>
-                <br><br>
-                <label>Barangay:<br>
-                    <input type="text" id="modalBarangay" required>
+                    <select id="modalStreet" required>
+                        <option value="">Select Street</option>
+                    </select>
                 </label>
                 <br><br>
                 <label>Description:<br>
@@ -432,10 +464,16 @@
     <div id="reportModal"
         style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1001; align-items:center; justify-content:center;">
         <div
-            style="background:#fff; padding:2rem; border-radius:8px; max-width:600px; width:95%; max-height:80vh; overflow:auto; position:relative;">
-            <h3 style="margin-top:0; color:#1976d2;">Reported Incidents</h3>
+            style="background:#223d22; color:#fff; border:2px solid #ffd600; padding:2rem; border-radius:8px; max-width:90vw; width:95%; max-height:80vh; overflow:auto; position:relative;">
+            <h3 style="margin-top:0; color:#ffd600;">Reported Incidents</h3>
             <button id="closeReportModal"
-                style="position:absolute; top:1rem; right:1rem; background:#eee; border:none; border-radius:50%; width:32px; height:32px; font-size:1.2rem; cursor:pointer;">&times;</button>
+                style="position:absolute; top:1rem; right:1rem; background:#ffd600; color:#145a32; border:none; border-radius:50%; width:32px; height:32px; font-size:1.2rem; cursor:pointer;">&times;</button>
+            <button id="downloadExcelBtn"
+                style="background:#ffd600; color:#145a32; border:none; border-radius:4px; padding:0.6rem 1.2rem; font-weight:bold; cursor:pointer; margin-bottom:1rem;">Download
+                as Excel</button>
+            <button id="downloadPdfBtn"
+                style="background:#ffd600; color:#145a32; border:none; border-radius:4px; padding:0.6rem 1.2rem; font-weight:bold; cursor:pointer; margin-bottom:1rem; margin-left:0.7rem;">Download
+                as PDF</button>
             <div id="reportList"></div>
         </div>
     </div>
@@ -444,10 +482,107 @@
         SCRIPTS & LOGIC SECTION
     ===========================-->
 
+    <!-- jsPDF CDN for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <script>
-        // ----------- Analytics Modal Logic -----------
+        /* =========================
+           PDF & Excel Download Logic
+        ========================= */
+        // Download incidents as PDF
+        document.addEventListener('DOMContentLoaded', function () {
+            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+            if (downloadPdfBtn) {
+                downloadPdfBtn.onclick = function () {
+                    let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+                    if (!incidents.length) {
+                        alert('No incidents to download.');
+                        return;
+                    }
+                    const headers = [
+                        "Category", "Description", "Purok", "Street", "Barangay", "Date", "Latitude", "Longitude"
+                    ];
+                    const rows = incidents.map(inc => [
+                        inc.category,
+                        inc.description,
+                        inc.purok,
+                        inc.street,
+                        inc.barangay,
+                        new Date(inc.date).toLocaleString(),
+                        inc.lat,
+                        inc.lng
+                    ]);
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: "landscape" });
+                    doc.setFontSize(16);
+                    doc.text("Incidents Report", 14, 14);
+                    let startY = 22;
+                    let colWidths = [30, 50, 20, 30, 30, 40, 25, 25];
+                    doc.setFontSize(10);
+                    headers.forEach((h, i) => {
+                        doc.setFont("helvetica", "bold");
+                        doc.text(h, 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), startY);
+                    });
+                    doc.setFont("helvetica", "normal");
+                    rows.forEach((row, rIdx) => {
+                        row.forEach((cell, cIdx) => {
+                            let y = startY + 8 + rIdx * 8;
+                            let x = 14 + colWidths.slice(0, cIdx).reduce((a, b) => a + b, 0);
+                            doc.text(String(cell), x, y, { maxWidth: colWidths[cIdx] - 2 });
+                        });
+                    });
+                    doc.save("incidents_report.pdf");
+                };
+            }
+
+            // Download incidents as Excel (CSV)
+            const downloadBtn = document.getElementById('downloadExcelBtn');
+            if (downloadBtn) {
+                downloadBtn.onclick = function () {
+                    let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+                    if (!incidents.length) {
+                        alert('No incidents to download.');
+                        return;
+                    }
+                    const headers = [
+                        "Category", "Description", "Purok", "Street", "Barangay", "Date", "Latitude", "Longitude"
+                    ];
+                    const rows = incidents.map(inc => [
+                        inc.category,
+                        inc.description,
+                        inc.purok,
+                        inc.street,
+                        inc.barangay,
+                        new Date(inc.date).toLocaleString(),
+                        inc.lat,
+                        inc.lng
+                    ]);
+                    let csvContent = headers.join(",") + "\n" +
+                        rows.map(r => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(",")).join("\n");
+                    const blob = new Blob([csvContent], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "incidents_report.csv";
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 0);
+                };
+            }
+        });
+    </script>
+
+    <script>
+        /* =========================
+           Analytics Modal Logic
+        ========================= */
         const analyticsBtn = document.getElementById('analyticsBtn');
         const analyticsModal = document.getElementById('analyticsModal');
         const closeAnalyticsModal = document.getElementById('closeAnalyticsModal');
@@ -456,14 +591,12 @@
         let analyticsChart = null;
         let analyticsLineChart = null;
 
-        // Incident categories
         const categories = [
             "Flood", "Earthquake", "Fire Outbreak", "Typhoon", "Landslide",
             "Tsunami", "Volcanic Eruption", "Drought", "Vehicular Accident",
             "Medical Emergency", "Other"
         ];
 
-        // Open analytics modal and render charts
         analyticsBtn.onclick = function () {
             analyticsModal.style.display = 'flex';
             let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
@@ -479,8 +612,8 @@
                     datasets: [{
                         data: counts,
                         backgroundColor: [
-                             '#ffd600', '#ff7043', '#42a5f5', '#66bb6a', '#ab47bc',
-                             '#26c6da', '#ffa726', '#8d6e63', '#789262', '#d4e157', '#bdbdbd'
+                            '#ffd600', '#ff7043', '#42a5f5', '#66bb6a', '#ab47bc',
+                            '#26c6da', '#ffa726', '#8d6e63', '#789262', '#d4e157', '#bdbdbd'
                         ]
                     }]
                 },
@@ -488,195 +621,72 @@
                     plugins: {
                         legend: {
                             display: true,
-                            position: 'right', // <-- Show all categories on the side
+                            position: 'right',
                             labels: { color: '#ffd600' }
                         }
                     }
                 }
             });
 
-           // Line Chart: Monthly incidents for last 2 years
-           const now = new Date();
-           let months = [];
-           for (let i = 23; i >= 0; i--) {
-              let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-              months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-           }
-           let monthCounts = months.map(m =>
-              incidents.filter(inc => {
-                 let d = new Date(inc.date);
-                 let ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                 return ym === m;
-              }).length
-           );
-           let monthLabels = months.map(m => {
-              let [y, mo] = m.split('-');
-              return new Date(y, mo - 1).toLocaleString('default', { month: 'short', year: 'numeric' });
-           });
-           if (analyticsLineChart) analyticsLineChart.destroy();
-           analyticsLineChart = new Chart(analyticsLine, {
-              type: 'line',
-              data: {
-                 labels: monthLabels,
-                 datasets: [{
-                    label: 'Incidents',
-                    data: monthCounts,
-                    borderColor: '#ffd600',
-                    backgroundColor: 'rgba(255,214,0,0.15)',
-                    fill: true,
-                    tension: 0.2,
-                    pointBackgroundColor: '#ffd600',
-                    pointBorderColor: '#223d22'
-                 }]
-              },
-              options: {
-                 plugins: {
-                    legend: { labels: { color: '#ffd600' } }
-                 },
-                 scales: {
-                    x: { ticks: { color: '#ffd600' }, grid: { color: '#444' } },
-                    y: { ticks: { color: '#ffd600' }, grid: { color: '#444' }, beginAtZero: true }
-                 }
-              }
-           });
-        };
-        // Close analytics modal
-        closeAnalyticsModal.onclick = function () {
-           analyticsModal.style.display = 'none';
-        };
-        window.addEventListener('click', function (e) {
-           if (e.target === analyticsModal) {
-              analyticsModal.style.display = 'none';
-           }
-        });
-    </script>
-
-    <!-- ----------- Report Modal Logic ----------- -->
-    <script>
-        const reportBtn = document.getElementById('reportBtn');
-        const reportModal = document.getElementById('reportModal');
-        const closeReportModal = document.getElementById('closeReportModal');
-        const reportList = document.getElementById('reportList');
-
-        // Open report modal and display incidents
-        reportBtn.onclick = function () {
-           let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-           if (incidents.length === 0) {
-              reportList.innerHTML = "<p>No incidents reported yet.</p>";
-           } else {
-              reportList.innerHTML = `
-              <div style="max-height:400px; overflow-y:auto;">
-                 <table style="width:100%; border-collapse:collapse;">
-                 <thead>
-                 <tr style="background:#f0f0f0;">
-                 <th style="padding:8px; border:1px solid #ddd;">Category</th>
-                 <th style="padding:8px; border:1px solid #ddd;">Description</th>
-                 <th style="padding:8px; border:1px solid #ddd;">Purok</th>
-                 <th style="padding:8px; border:1px solid #ddd;">Street</th>
-                 <th style="padding:8px; border:1px solid #ddd;">Barangay</th>
-                 <th style="padding:8px; border:1px solid #ddd;">Date</th>
-                 <th style="padding:8px; border:1px solid #ddd;">Location</th>
-                 <th style="padding:8px; border:1px solid #ddd;">Action</th>
-                 </tr>
-                 </thead>
-                 <tbody>
-                 ${incidents.map((inc, idx) => `
-                 <tr>
-                 <td style="padding:8px; border:1px solid #ddd;">${inc.category}</td>
-                 <td style="padding:8px; border:1px solid #ddd;">${inc.description}</td>
-                 <td style="padding:8px; border:1px solid #ddd;">${inc.purok}</td>
-                 <td style="padding:8px; border:1px solid #ddd;">${inc.street}</td>
-                 <td style="padding:8px; border:1px solid #ddd;">${inc.barangay}</td>
-                 <td style="padding:8px; border:1px solid #ddd;">${new Date(inc.date).toLocaleString()}</td>
-                 <td style="padding:8px; border:1px solid #ddd;">Lat: ${parseFloat(inc.lat).toFixed(5)}, Lng: ${parseFloat(inc.lng).toFixed(5)}</td>
-                 <td style="padding:8px; border:1px solid #ddd;">
-                    <button class="updateBtn" data-idx="${idx}" style="background:#1976d2; color:#fff; border:none; border-radius:4px; padding:4px 10px; cursor:pointer;">Update</button>
-                 </td>
-                 </tr>
-                 `).join('')}
-                 </tbody>
-                 </table>
-              </div>`;
-           }
-
-           // Make report modal larger
-           reportModal.querySelector('div').style.maxWidth = '90vw';
-           reportModal.querySelector('div').style.width = '98%';
-           reportModal.style.display = 'flex';
-
-           // Add event listeners for update buttons
-           document.querySelectorAll('.updateBtn').forEach(btn => {
-              btn.onclick = function () {
-                 const idx = this.getAttribute('data-idx');
-                 const inc = incidents[idx];
-                 // Fill modal with incident data
-                 document.getElementById('modalCategory').value = inc.category;
-                 document.getElementById('modalDescription').value = inc.description;
-                 document.getElementById('modalPurok').value = inc.purok;
-                 document.getElementById('modalStreet').value = inc.street;
-                 document.getElementById('modalBarangay').value = inc.barangay;
-                 document.getElementById('modalLat').value = inc.lat;
-                 document.getElementById('modalLng').value = inc.lng;
-                 // Remove marker if exists and add new marker
-                 if (window.marker) {
-                    map.removeLayer(window.marker);
-                    window.marker = null;
-                 }
-                 window.marker = L.marker([inc.lat, inc.lng]).addTo(map);
-                 // Show modal
-                 incidentModal.style.display = 'flex';
-                 // On submit, update the incident
-                 modalForm.onsubmit = function (e) {
-                    e.preventDefault();
-                    // Collect updated data
-                    const category = document.getElementById('modalCategory').value;
-                    const description = document.getElementById('modalDescription').value;
-                    const purok = document.getElementById('modalPurok').value;
-                    const street = document.getElementById('modalStreet').value;
-                    const barangay = document.getElementById('modalBarangay').value;
-                    const lat = document.getElementById('modalLat').value;
-                    const lng = document.getElementById('modalLng').value;
-                    if (!lat || !lng) {
-                        alert('Please select a location on the map.');
-                        return;
+            // Line Chart: Monthly incidents for last 2 years
+            const now = new Date();
+            let months = [];
+            for (let i = 23; i >= 0; i--) {
+                let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+            }
+            let monthCounts = months.map(m =>
+                incidents.filter(inc => {
+                    let d = new Date(inc.date);
+                    let ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    return ym === m;
+                }).length
+            );
+            let monthLabels = months.map(m => {
+                let [y, mo] = m.split('-');
+                return new Date(y, mo - 1).toLocaleString('default', { month: 'short', year: 'numeric' });
+            });
+            if (analyticsLineChart) analyticsLineChart.destroy();
+            analyticsLineChart = new Chart(analyticsLine, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Incidents',
+                        data: monthCounts,
+                        borderColor: '#ffd600',
+                        backgroundColor: 'rgba(255,214,0,0.15)',
+                        fill: true,
+                        tension: 0.2,
+                        pointBackgroundColor: '#ffd600',
+                        pointBorderColor: '#223d22'
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { labels: { color: '#ffd600' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#ffd600' }, grid: { color: '#444' } },
+                        y: { ticks: { color: '#ffd600' }, grid: { color: '#444' }, beginAtZero: true }
                     }
-                    // Update incident
-                    incidents[idx] = {
-                        ...incidents[idx],
-                        category,
-                        description,
-                        purok,
-                        street,
-                        barangay,
-                        lat,
-                        lng
-                    };
-                    localStorage.setItem('incidents', JSON.stringify(incidents));
-                    alert('Incident updated!');
-                    incidentModal.style.display = 'none';
-                    modalForm.reset();
-                    reportModal.style.display = 'none';
-                    location.reload(); // Reload to update map markers
-                 };
-              };
-           });
+                }
+            });
         };
-
-        // Close report modal
-        closeReportModal.onclick = function () {
-           reportModal.style.display = 'none';
+        closeAnalyticsModal.onclick = function () {
+            analyticsModal.style.display = 'none';
         };
         window.addEventListener('click', function (e) {
-           if (e.target === reportModal) {
-              reportModal.style.display = 'none';
-           }
+            if (e.target === analyticsModal) {
+                analyticsModal.style.display = 'none';
+            }
         });
     </script>
 
-    <!-- ----------- Leaflet Map & Incident Modal Logic ----------- -->
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+        /* =========================
+           Leaflet Map & Incident Modal Logic
+        ========================= */
         // Modal open/close logic
         const openModalBtn = document.getElementById('openModalBtn');
         const incidentModal = document.getElementById('incidentModal');
@@ -686,30 +696,28 @@
         const modalLng = document.getElementById('modalLng');
 
         openModalBtn.onclick = () => {
-           incidentModal.style.display = 'flex';
-           modalLat.value = '';
-           modalLng.value = '';
-           if (marker) {
-              map.removeLayer(marker);
-              marker = null;
-           }
+            incidentModal.style.display = 'flex';
+            modalLat.value = '';
+            modalLng.value = '';
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
         };
         modalCancel.onclick = () => {
-           incidentModal.style.display = 'none';
-           modalForm.reset();
+            incidentModal.style.display = 'none';
+            modalForm.reset();
         };
         window.onclick = (e) => {
-           if (e.target === incidentModal) {
-              incidentModal.style.display = 'none';
-              modalForm.reset();
-           }
+            if (e.target === incidentModal) {
+                incidentModal.style.display = 'none';
+                modalForm.reset();
+            }
         };
 
-        // ----------- Map logic -----------
+        // Map logic
         let map = L.map('map').setView([10.88015256475575, 123.4027104654905], 12); // Centered on Sagay City
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-        // Make the map larger by increasing its height
         document.getElementById('map').style.height = '500px';
         map.invalidateSize();
 
@@ -717,28 +725,27 @@
 
         // On map click, open modal and set lat/lng
         map.on('click', function (e) {
-           incidentModal.style.display = 'flex';
-           modalLat.value = e.latlng.lat;
-           modalLng.value = e.latlng.lng;
-           // Add or move marker
-           if (marker) {
-              marker.setLatLng(e.latlng);
-           } else {
-              marker = L.marker(e.latlng).addTo(map);
-           }
+            incidentModal.style.display = 'flex';
+            modalLat.value = e.latlng.lat;
+            modalLng.value = e.latlng.lng;
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
         });
 
-        // Haversine formula to compute distance in km
+        // Haversine formula for distance calculation
         function haversine(lat1, lng1, lat2, lng2) {
-           function toRad(x) { return x * Math.PI / 180; }
-           const R = 6371; // km
-           const dLat = toRad(lat2 - lat1);
-           const dLng = toRad(lng2 - lng1);
-           const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-              Math.sin(dLng / 2) * Math.sin(dLng / 2);
-           const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-           return R * c;
+            function toRad(x) { return x * Math.PI / 180; }
+            const R = 6371; // km
+            const dLat = toRad(lat2 - lat1);
+            const dLng = toRad(lng2 - lng1);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
         }
 
         // Reference points for distance calculation
@@ -749,195 +756,993 @@
 
         // Load and display all incidents from localStorage
         function loadIncidents() {
-           let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-           incidents.forEach(incident => {
-              const dist1 = haversine(refLat1, refLng1, parseFloat(incident.lat), parseFloat(incident.lng));
-              const dist2 = haversine(refLat2, refLng2, parseFloat(incident.lat), parseFloat(incident.lng));
-              let popupHtml = `
-                 <b>${incident.category}</b><br>
-                 ${incident.description}<br>
-                 <small>${new Date(incident.date).toLocaleString()}</small><br>
-                 <b>Purok:</b> ${incident.purok}<br>
-                 <b>Street:</b> ${incident.street}<br>
-                 <b>Barangay:</b> ${incident.barangay}<br>
-                 <b>Distance from Fire Station:</b> ${dist1.toFixed(2)} km<br>
-                 <b>Distance from Police Station:</b> ${dist2.toFixed(2)} km
-              `;
-              if (incident.image) {
-                 popupHtml += `<br><img src="${incident.image}" alt="Incident Image" style="max-width:200px;max-height:200px;margin-top:6px;border-radius:4px;border:1px solid #ffd600;">`;
-              }
-              L.marker([incident.lat, incident.lng])
-                 .addTo(map)
-                 .bindPopup(popupHtml);
-           });
+            let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+            incidents.forEach(incident => {
+                const dist1 = haversine(refLat1, refLng1, parseFloat(incident.lat), parseFloat(incident.lng));
+                const dist2 = haversine(refLat2, refLng2, parseFloat(incident.lat), parseFloat(incident.lng));
+                let popupHtml = `
+             <b>${incident.category}</b><br>
+             ${incident.description}<br>
+             <small>${new Date(incident.date).toLocaleString()}</small><br>
+             <b>Purok:</b> ${incident.purok}<br>
+             <b>Street:</b> ${incident.street}<br>
+             <b>Barangay:</b> ${incident.barangay}<br>
+             <b>Distance from Fire Station:</b> ${dist1.toFixed(2)} km<br>
+             <b>Distance from Police Station:</b> ${dist2.toFixed(2)} km
+          `;
+                if (incident.image) {
+                    popupHtml += `<br><img src="${incident.image}" alt="Incident Image" style="max-width:200px;max-height:200px;margin-top:6px;border-radius:4px;border:1px solid #ffd600;">`;
+                }
+                L.marker([incident.lat, incident.lng])
+                    .addTo(map)
+                    .bindPopup(popupHtml);
+            });
         }
         loadIncidents();
+    </script>
 
-        // ----------- Image Preview Logic -----------
+    <script>
+        /* =========================
+           Image Preview Logic
+        ========================= */
         const modalImage = document.getElementById('modalImage');
         const imagePreview = document.getElementById('imagePreview');
         let imageDataUrl = "";
 
         modalImage.onchange = function (e) {
-           const file = e.target.files[0];
-           if (file) {
-              const reader = new FileReader();
-              reader.onload = function (evt) {
-                 imageDataUrl = evt.target.result;
-                 imagePreview.innerHTML = `<img src="${imageDataUrl}" alt="Preview" style="max-width:100%;max-height:120px;border-radius:4px;border:1px solid #ffd600;">`;
-              };
-              reader.readAsDataURL(file);
-           } else {
-              imageDataUrl = "";
-              imagePreview.innerHTML = "";
-           }
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    imageDataUrl = evt.target.result;
+                    imagePreview.innerHTML = `<img src="${imageDataUrl}" alt="Preview" style="max-width:100%;max-height:120px;border-radius:4px;border:1px solid #ffd600;">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imageDataUrl = "";
+                imagePreview.innerHTML = "";
+            }
         };
+    </script>
 
-        // ----------- Incident Form Submission -----------
+    <script>
+        /* =========================
+           Incident Form Submission
+        ========================= */
         modalForm.onsubmit = (e) => {
-           e.preventDefault();
-           // Collect data
-           const category = document.getElementById('modalCategory').value;
-           const description = document.getElementById('modalDescription').value;
-           const purok = document.getElementById('modalPurok').value;
-           const street = document.getElementById('modalStreet').value;
-           const barangay = document.getElementById('modalBarangay').value;
-           const lat = modalLat.value;
-           const lng = modalLng.value;
+            e.preventDefault();
+            const category = document.getElementById('modalCategory').value;
+            const description = document.getElementById('modalDescription').value;
+            const purok = document.getElementById('modalPurok').value;
+            const street = document.getElementById('modalStreet').value;
+            const barangay = document.getElementById('modalBarangay').value;
+            const lat = modalLat.value;
+            const lng = modalLng.value;
 
-           if (!lat || !lng) {
-              alert('Please select a location on the map.');
-              return;
-           }
+            if (!lat || !lng) {
+                alert('Please select a location on the map.');
+                return;
+            }
 
-           // Save to localStorage
-           const incident = { id: loggedInUser.id, category, description, purok, street, barangay, lat, lng, date: new Date().toISOString(), image: imageDataUrl || "" };
-           let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-           incidents.push(incident);
-           localStorage.setItem('incidents', JSON.stringify(incidents));
+            // Generate unique incidentId as primary key
+            const incidentId = 'inc_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+            // Save to localStorage
+            const incident = {incidentId, id: loggedInUser.id, category, description, purok, street, barangay, lat, lng, date: new Date().toISOString(), image: imageDataUrl || "" };
+            let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+            incidents.push(incident);
+            try {
+                localStorage.setItem('incidents', JSON.stringify(incidents));
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                    alert('Storage limit exceeded! Please delete some incidents or images and try again.');
+                    return;
+                } else {
+                    throw e;
+                }
+            }
 
-           alert('Incident reported!');
-           incidentModal.style.display = 'none';
-           modalForm.reset();
-           imagePreview.innerHTML = "";
-           imageDataUrl = "";
+            alert('Incident reported!');
+            incidentModal.style.display = 'none';
+            modalForm.reset();
+            imagePreview.innerHTML = "";
+            imageDataUrl = "";
 
-           // Add marker for the new incident
-           const dist1 = haversine(refLat1, refLng1, parseFloat(lat), parseFloat(lng));
-           const dist2 = haversine(refLat2, refLng2, parseFloat(lat), parseFloat(lng));
-           L.marker([lat, lng])
-              .addTo(map)
-              .bindPopup(
-                 `<b>${category}</b><br>${description}<br><small>${new Date(incident.date).toLocaleString()}</small><br><b>Distance from Fire Station:</b> ${dist1.toFixed(2)} km<br><b>Distance from Police Station:</b> ${dist2.toFixed(2)} km`
-              );
-           marker = null;
+            // Add marker for the new incident
+            const dist1 = haversine(refLat1, refLng1, parseFloat(lat), parseFloat(lng));
+            const dist2 = haversine(refLat2, refLng2, parseFloat(lat), parseFloat(lng));
+            L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup(
+                    `<b>${category}</b><br>${description}<br><small>${new Date(incident.date).toLocaleString()}</small><br><b>Distance from Fire Station:</b> ${dist1.toFixed(2)} km<br><b>Distance from Police Station:</b> ${dist2.toFixed(2)} km`
+                );
+            marker = null;
         };
+    </script>
 
-        // ----------- Date & Time Display -----------
+    <script>
+        /* =========================
+           Date & Time Display
+        ========================= */
         function updateDateTime() {
-           const now = new Date();
-           const options = { year: 'numeric', month: 'long', day: 'numeric' };
-           const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-           document.getElementById('currentDate').textContent = now.toLocaleDateString(undefined, options);
-           document.getElementById('currentTime').textContent = time;
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('currentDate').textContent = now.toLocaleDateString(undefined, options);
+            document.getElementById('currentTime').textContent = time;
         }
         setInterval(updateDateTime, 1000);
         updateDateTime();
-
-        // ----------- Auto-hide Alerts -----------
-        setTimeout(function () {
-           var alertElement = document.getElementById('tempAlert');
-           if (alertElement) {
-              alertElement.style.display = 'none';
-           }
-        }, 5000);
-        setTimeout(function () {
-           var alertElement = document.getElementById('errorAlert');
-           if (alertElement) {
-              alertElement.style.display = 'none';
-           }
-        }, 2000);
     </script>
 
-    <!-- ----------- Weather Modal Logic (5-day forecast) ----------- -->
     <script>
+        /* =========================
+           Weather Modal Logic (5-day forecast)
+        ========================= */
         const weatherBtn = document.getElementById('weatherBtn');
         const weatherModal = document.getElementById('weatherModal');
         const closeWeatherModal = document.getElementById('closeWeatherModal');
         const weatherContent = document.getElementById('weatherContent');
-
-        // Open weather modal and fetch forecast
         weatherBtn.onclick = function () {
-           weatherModal.style.display = 'flex';
-           weatherContent.innerHTML = "<p>Loading weather...</p>";
-           // Fetch 5-day forecast from wttr.in
-           fetch('https://wttr.in/Sagay?format=j1')
-              .then(res => res.json())
-              .then(data => {
-                 if (!data.weather || !Array.isArray(data.weather)) {
+            weatherModal.style.display = 'flex';
+            weatherContent.innerHTML = "<p>Loading weather...</p>";
+            fetch('https://wttr.in/Sagay?format=j1')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.weather || !Array.isArray(data.weather)) {
+                        weatherContent.innerHTML = "<p>Unable to fetch weather data.</p>";
+                        return;
+                    }
+                    let html = `
+                    <h4 style="color:#ffd600; margin-bottom:0.7rem; font-size:1.5rem; text-align:center;">5-Day Forecast</h4>
+                    <div id="weatherScroll" style="display: flex; flex-direction: column; gap: 1rem; max-height: 420px; min-width: 340px; width: 100%; overflow-y: auto; padding: 12px 16px 12px 0; scrollbar-width: thin; scrollbar-color: #ffd600 #223d22; background: rgba(34,61,34,0.95); border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.18);">
+                `;
+                    data.weather.slice(0, 5).forEach(day => {
+                        html += `
+                        <div style="border: 1.5px solid #ffd600; padding: 1.2rem 1rem 1rem 1rem; background: rgba(34,61,34,0.92); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); display: flex; flex-direction: row; align-items: center; gap: 1.2rem;">
+                            <div style="flex:1;">
+                                <div style="font-size:1.1rem; font-weight:bold; color:#ffd600;">${day.date}</div>
+                                <div style="margin-top:0.3rem;">
+                                    <span style="font-size:1.05rem;">Condition: <span style="color:#ffd600;">${day.hourly[4].weatherDesc[0].value}</span></span><br>
+                                    <span style="font-size:1.05rem;">Temp: <span style="color:#ffd600;">${day.maxtempC}°C</span> / <span style="color:#ffd600;">${day.mintempC}°C</span></span><br>
+                                    <span style="font-size:1.05rem;">Wind: <span style="color:#ffd600;">${day.hourly[4].windspeedKmph} km/h</span></span>
+                                </div>
+                            </div>
+                            <div style="flex-shrink:0;">
+                                <img src="https://cdn-icons-png.flaticon.com/512/9098/9098495.png" alt="icon" style="width:54px;height:54px;border-radius:6px;border:1px solid #ffd600;background:#fff;">
+                            </div>
+                        </div>
+                    `;
+                    });
+                    html += '</div>';
+                    weatherModal.querySelector('div').style.maxWidth = '520px';
+                    weatherModal.querySelector('div').style.width = '98%';
+                    weatherModal.querySelector('div').style.minHeight = '520px';
+                    weatherModal.querySelector('div').style.boxShadow = '0 8px 40px rgba(0,0,0,0.28)';
+                    weatherModal.querySelector('div').style.border = '3px solid #ffd600';
+                    weatherModal.querySelector('div').style.background = '#223d22';
+                    weatherContent.innerHTML = html;
+                })
+                .catch(() => {
                     weatherContent.innerHTML = "<p>Unable to fetch weather data.</p>";
-                    return;
-                 }
-                 let html = `
-              <h4 style="color:#ffd600; margin-bottom:0.7rem;">5-Day Forecast</h4>
-              <div style="
-              display:flex; 
-              flex-direction:column; 
-              gap:0.7rem; 
-              max-height:260px; 
-              overflow-y:auto; 
-              padding-right:8px;
-              scrollbar-width:thin;
-              scrollbar-color:#ffd600 #223d22;
-              " id="weatherScroll">
-           `;
-                 data.weather.slice(0, 5).forEach(day => {
-                    html += `
-              <div style="
-                 border-bottom:1px solid #ffd600; 
-                 padding-bottom:0.5rem; 
-                 padding-top:0.5rem;
-                 background:rgba(34,61,34,0.7);
-                 border-radius:4px;
-              ">
-                 <b style="color:#ffd600;">${day.date}</b><br>
-                 <span>Condition: <span style="color:#ffd600;">${day.hourly[4].weatherDesc[0].value}</span></span><br>
-                 <span>Temp: <span style="color:#ffd600;">${day.maxtempC}°C</span> / <span style="color:#ffd600;">${day.mintempC}°C</span></span><br>
-                 <span>Wind: <span style="color:#ffd600;">${day.hourly[4].windspeedKmph} km/h</span></span>
-              </div>
-              `;
-                 });
-                 html += '</div>';
-                 weatherContent.innerHTML = html;
-
-                 // Optional: Custom scrollbar styling for modern browsers
-                 const weatherScroll = document.getElementById('weatherScroll');
-                 if (weatherScroll) {
-                    weatherScroll.style.scrollbarWidth = 'thin';
-                    weatherScroll.style.scrollbarColor = '#ffd600 #223d22';
-                 }
-              })
-              .catch(() => {
-                 weatherContent.innerHTML = "<p>Unable to fetch weather data.</p>";
-              });
+                });
         };
-        // Close weather modal
         closeWeatherModal.onclick = function () {
-           weatherModal.style.display = 'none';
+            weatherModal.style.display = 'none';
         };
         window.addEventListener('click', function (e) {
-           if (e.target === weatherModal) {
-              weatherModal.style.display = 'none';
-           }
+            if (e.target === weatherModal) {
+                weatherModal.style.display = 'none';
+            }
         });
+    </script>
 
-        // ----------- Logout Button Logic (if present) -----------
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-           logoutBtn.onclick = function () {
-              window.location.href = 'login.html';
-           };
+    <script>
+        /* =========================
+           Report Modal Script
+        ========================= */
+        // Handles opening the report modal and populating the user's incidents
+        const reportBtn = document.getElementById('reportBtn');
+        const reportModal = document.getElementById('reportModal');
+        const closeReportModal = document.getElementById('closeReportModal');
+        const reportList = document.getElementById('reportList');
+        reportBtn.onclick = function () {
+            let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+            let userIncidents = incidents;
+            if (userIncidents.length === 0) {
+                reportList.innerHTML = "<p>No incidents reported yet.</p>";
+            } else {
+                reportList.innerHTML = `
+                <div style="max-height:400px; overflow-y:auto;">
+                    <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                    <tr style="background:#f0f0f0;">
+                    <th style="padding:8px; border:1px solid #ddd;">Id</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Category</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Description</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Purok</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Street</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Barangay</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Date</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Location</th>
+                    <th style="padding:8px; border:1px solid #ddd;">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    ${userIncidents.map((inc, idx) => `
+                    <tr>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.incidentId}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.category}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.description}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.purok}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.street}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${inc.barangay}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">${new Date(inc.date).toLocaleString()}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">Lat: ${parseFloat(inc.lat).toFixed(5)}, Lng: ${parseFloat(inc.lng).toFixed(5)}</td>
+                    <td style="padding:8px; border:1px solid #ddd;">
+                        <button class="updateBtn" data-idx="${incidents.indexOf(inc)}" style="background:#1976d2; color:#fff; border:none; border-radius:4px; padding:4px 10px; cursor:pointer;">Update</button>
+                        <button class="deleteBtn" data-incidentid="${inc.incidentId}" style="background:#d32f2f; color:#fff; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; margin-left:4px;">Delete</button>
+                    </td>
+                    </tr>
+                    `).join('')}
+                    </tbody>
+                    </table>
+                </div>`;
+            }
+            reportModal.querySelector('div').style.maxWidth = '90vw';
+            reportModal.querySelector('div').style.width = '98%';
+            reportModal.style.display = 'flex';
+
+            // Add event listeners for update buttons
+            document.querySelectorAll('.updateBtn').forEach(btn => {
+                btn.onclick = function () {
+                    const idx = this.getAttribute('data-idx');
+                    const inc = incidents[idx];
+                    document.getElementById('modalCategory').value = inc.category;
+                    document.getElementById('modalDescription').value = inc.description;
+                    document.getElementById('modalPurok').value = inc.purok;
+                    document.getElementById('modalStreet').value = inc.street;
+                    document.getElementById('modalBarangay').value = inc.barangay;
+                    document.getElementById('modalLat').value = inc.lat;
+                    document.getElementById('modalLng').value = inc.lng;
+                    if (window.marker) {
+                        map.removeLayer(window.marker);
+                        window.marker = null;
+                    }
+                    window.marker = L.marker([inc.lat, inc.lng]).addTo(map);
+                    incidentModal.style.display = 'flex';
+                    modalForm.onsubmit = function (e) {
+                        e.preventDefault();
+                        const category = document.getElementById('modalCategory').value;
+                        const description = document.getElementById('modalDescription').value;
+                        const purok = document.getElementById('modalPurok').value;
+                        const street = document.getElementById('modalStreet').value;
+                        const barangay = document.getElementById('modalBarangay').value;
+                        const lat = document.getElementById('modalLat').value;
+                        const lng = document.getElementById('modalLng').value;
+                        if (!lat || !lng) {
+                            alert('Please select a location on the map.');
+                            return;
+                        }
+                        incidents[idx] = {
+                            ...incidents[idx],
+                            category,
+                            description,
+                            purok,
+                            street,
+                            barangay,
+                            lat,
+                            lng
+                        };
+                        localStorage.setItem('incidents', JSON.stringify(incidents));
+                        alert('Incident updated!');
+                        incidentModal.style.display = 'none';
+                        modalForm.reset();
+                        reportModal.style.display = 'none';
+                        location.reload();
+                    };
+                };
+            });
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.deleteBtn').forEach(btn => {
+                btn.onclick = function () {
+                    const incidentId = this.getAttribute('data-incidentid');
+                    let confirmModal = document.getElementById('customConfirmModal');
+                    if (!confirmModal) {
+                        confirmModal = document.createElement('div');
+                        confirmModal.id = 'customConfirmModal';
+                        confirmModal.style.position = 'fixed';
+                        confirmModal.style.top = '0';
+                        confirmModal.style.left = '0';
+                        confirmModal.style.width = '100vw';
+                        confirmModal.style.height = '100vh';
+                        confirmModal.style.background = 'rgba(0,0,0,0.4)';
+                        confirmModal.style.zIndex = '2000';
+                        confirmModal.style.display = 'flex';
+                        confirmModal.style.alignItems = 'center';
+                        confirmModal.style.justifyContent = 'center';
+                        confirmModal.innerHTML = `
+                        <div style="background:#223d22; color:#ffd600; border:2px solid #ffd600; border-radius:8px; padding:2rem 2.5rem; text-align:center; min-width:260px; max-width:90vw; box-shadow:0 4px 24px rgba(0,0,0,0.25);">
+                            <div style="font-size:1.2rem; margin-bottom:1.2rem;">Are you sure you want to delete this incident?</div>
+                            <div style="display:flex; gap:1.2rem; justify-content:right;">
+                                <button id="confirmNoBtn" style="background:#ffd600; color:#145a32; border:none; border-radius:4px; padding:0.6rem 1.4rem; font-weight:bold; cursor:pointer;">No</button>
+                                <button id="confirmYesBtn" style="background:#d32f2f; color:#fff; border:none; border-radius:4px; padding:0.6rem 1.4rem; font-weight:bold; cursor:pointer;">Yes</button>
+                            </div>
+                        </div>
+                    `;
+                        document.body.appendChild(confirmModal);
+                    } else {
+                        confirmModal.style.display = 'flex';
+                    }
+                    confirmModal.querySelector('#confirmYesBtn').onclick = function () {
+                        let incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+                        const idx = incidents.findIndex(inc => inc.incidentId === incidentId);
+                        if (idx !== -1) {
+                            incidents.splice(idx, 1);
+                            localStorage.setItem('incidents', JSON.stringify(incidents));
+                        }
+                        confirmModal.querySelector('div').innerHTML = '<div style="font-size:1.1rem; color:#ffd600; margin-bottom:0.8rem;">Incident deleted!</div>';
+                        setTimeout(() => {
+                            confirmModal.style.display = 'none';
+                            reportModal.style.display = 'none';
+                            location.reload();
+                        }, 1200);
+                    };
+                    confirmModal.querySelector('#confirmNoBtn').onclick = function () {
+                        confirmModal.style.display = 'none';
+                    };
+                };
+            });
+        };
+        closeReportModal.onclick = function () {
+            reportModal.style.display = 'none';
+        };
+        window.addEventListener('click', function (e) {
+            if (e.target === reportModal) {
+                reportModal.style.display = 'none';
+            }
+        });
+    </script>
+
+    <script>
+        /* =========================
+           Barangay, Purok, Street Dropdown Logic
+        ========================= */
+        const barangayData = [
+            {
+                "barangay": "Baviera",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6",
+                    "Purok 7"
+                ],
+                "streets": [
+                    "Sitio Baviera Proper",
+                    "Sitio Bato",
+                    "Sitio Buli",
+                    "Sitio Cansilayan",
+                    "Sitio Dapdap",
+                    "Sitio Kabatangan",
+                    "Sitio Kalubihan",
+                    "Sitio Katipunan",
+                    "Sitio Lantawan",
+                    "Sitio Lubi",
+                    "Sitio Malipayon",
+                    "Sitio Pasil",
+                    "Sitio San Isidro",
+                    "Sitio San Roque"
+                ]
+            },
+            {
+                "barangay": "Bato",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6",
+                    "Purok 7"
+                ],
+                "streets": [
+                    "Sitio Bato Proper",
+                    "Sitio Buli",
+                    "Sitio Kabatangan",
+                    "Sitio Kalubihan",
+                    "Sitio Katipunan",
+                    "Sitio Lantawan",
+                    "Sitio Lubi",
+                    "Sitio Malipayon",
+                    "Sitio Pasil",
+                    "Sitio San Isidro",
+                    "Sitio San Roque"
+                ]
+            },
+            {
+                "barangay": "Bulanon",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6",
+                    "Purok 7"
+                ],
+                "streets": [
+                    "Sitio Bulanon Proper",
+                    "Sitio Cansilayan",
+                    "Sitio Dapdap",
+                    "Sitio Kabatangan",
+                    "Sitio Kalubihan",
+                    "Sitio Katipunan",
+                    "Sitio Lantawan",
+                    "Sitio Lubi",
+                    "Sitio Malipayon",
+                    "Sitio Pasil",
+                    "Sitio San Isidro",
+                    "Sitio San Roque"
+                ]
+            },
+            {
+                "barangay": "Campo Himoga-an",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6"
+                ],
+                "streets": [
+                    "Sitio Campo Proper",
+                    "Sitio Himoga-an",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro",
+                    "Sitio Lantawan"
+                ]
+            },
+            {
+                "barangay": "Colonia Divina",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5"
+                ],
+                "streets": [
+                    "Sitio Colonia Proper",
+                    "Sitio Divina",
+                    "Sitio Kabatangan",
+                    "Sitio Katipunan"
+                ]
+            },
+            {
+                "barangay": "Fabrica",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6",
+                    "Purok 7",
+                    "Purok 8",
+                    "Purok 9",
+                    "Purok 10"
+                ],
+                "streets": [
+                    "Sitio Fabrica Proper",
+                    "Sitio Kabatangan",
+                    "Sitio Katipunan",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro",
+                    "Sitio San Roque"
+                ]
+            },
+            {
+                "barangay": "Himoga-an Baybay",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6"
+                ],
+                "streets": [
+                    "Sitio Baybay Proper",
+                    "Sitio Himoga-an",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro",
+                    "Sitio Lantawan"
+                ]
+            },
+            {
+                "barangay": "Lopez Jaena",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6"
+                ],
+                "streets": [
+                    "Sitio Lopez Proper",
+                    "Sitio Jaena",
+                    "Sitio Kabatangan",
+                    "Sitio Katipunan",
+                    "Sitio Lantawan",
+                    "Sitio Malipayon"
+                ]
+            },
+            {
+                "barangay": "Malubon",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5"
+                ],
+                "streets": [
+                    "Sitio Malubon Proper",
+                    "Sitio Kabatangan",
+                    "Sitio Katipunan",
+                    "Sitio Lantawan"
+                ]
+            },
+            {
+                "barangay": "Old Sagay",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6",
+                    "Purok 7",
+                    "Purok 8"
+                ],
+                "streets": [
+                    "Sitio Old Sagay Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro",
+                    "Sitio San Roque",
+                    "Sitio Kabatangan"
+                ]
+            },
+            {
+                "barangay": "Paraiso",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6"
+                ],
+                "streets": [
+                    "Sitio Paraiso Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro"
+                ]
+            },
+            {
+                "barangay": "Poblacion I",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4"
+                ],
+                "streets": [
+                    "Rizal Street",
+                    "Bonifacio Street",
+                    "Del Pilar Street",
+                    "Mabini Street",
+                    "Burgos Street",
+                    "Luna Street"
+                ]
+            },
+            {
+                "barangay": "Poblacion II",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4"
+                ],
+                "streets": [
+                    "Rizal Street",
+                    "Bonifacio Street",
+                    "Del Pilar Street",
+                    "Mabini Street",
+                    "Burgos Street",
+                    "Luna Street"
+                ]
+            },
+            {
+                "barangay": "Puey",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5"
+                ],
+                "streets": [
+                    "Sitio Puey Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro"
+                ]
+            },
+            {
+                "barangay": "Rizal",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5"
+                ],
+                "streets": [
+                    "Sitio Rizal Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro"
+                ]
+            },
+            {
+                "barangay": "Taba-ao",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6"
+                ],
+                "streets": [
+                    "Sitio Taba-ao Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro"
+                ]
+            },
+            {
+                "barangay": "Tadlong",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4"
+                ],
+                "streets": [
+                    "Sitio Tadlong Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan",
+                    "Sitio Malipayon"
+                ]
+            },
+            {
+                "barangay": "Vito",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5",
+                    "Purok 6"
+                ],
+                "streets": [
+                    "Sitio Vito Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan",
+                    "Sitio Malipayon",
+                    "Sitio San Isidro"
+                ]
+            },
+            {
+                "barangay": "Molocaboc",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3"
+                ],
+                "streets": [
+                    "Sitio Molocaboc Proper",
+                    "Sitio Daku",
+                    "Sitio Diotay"
+                ]
+            },
+            {
+                "barangay": "Andres Bonifacio",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4"
+                ],
+                "streets": [
+                    "Sitio Bonifacio Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan"
+                ]
+            },
+            {
+                "barangay": "General Luna",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4"
+                ],
+                "streets": [
+                    "Sitio Luna Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan"
+                ]
+            },
+            {
+                "barangay": "Langub",
+                "puroks": [
+                    "Purok 1",
+                    "Purok 2",
+                    "Purok 3",
+                    "Purok 4",
+                    "Purok 5"
+                ],
+                "streets": [
+                    "Sitio Langub Proper",
+                    "Sitio Dapdap",
+                    "Sitio Lantawan"
+                ]
+            }
+        ];
+        const barangaySelect = document.getElementById('modalBarangay');
+        barangayData.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.barangay;
+            opt.textContent = b.barangay;
+            barangaySelect.appendChild(opt);
+        });
+        barangaySelect.addEventListener('change', function () {
+            const selected = this.value;
+            const purokSelect = document.getElementById('modalPurok');
+            const streetSelect = document.getElementById('modalStreet');
+            purokSelect.innerHTML = '<option value="">Select Purok</option>';
+            streetSelect.innerHTML = '<option value="">Select Street</option>';
+            const found = barangayData.find(b => b.barangay === selected);
+            if (found) {
+                found.puroks.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    opt.textContent = p;
+                    purokSelect.appendChild(opt);
+                });
+                found.streets.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = s;
+                    streetSelect.appendChild(opt);
+                });
+            }
+        });
+    </script>
+
+    <script>
+        /* =========================
+           Users Modal Script
+        ========================= */
+        const usersBtn = document.getElementById('usersBtn');
+        const usersModal = document.getElementById('usersModal');
+        const closeUsersModal = document.getElementById('closeUsersModal');
+        const usersList = document.getElementById('usersList');
+
+        // Render users table
+        function renderUsersTable() {
+            let users = JSON.parse(localStorage.getItem('user') || '[]');
+            if (!Array.isArray(users) || users.length === 0) {
+                usersList.innerHTML = "<p>No users found.</p>";
+            } else {
+                usersList.innerHTML = `
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; min-width:1200px; border-collapse:collapse; font-size:1.15rem;">
+                        <thead>
+                            <tr>
+                                <th style='padding:12px; border:1.5px solid #ffd600;'>Username</th>
+                                <th style='padding:12px; border:1.5px solid #ffd600;'>Full Name</th>
+                                <th style='padding:12px; border:1.5px solid #ffd600;'>Email</th>
+                                <th style='padding:12px; border:1.5px solid #ffd600;'>Role</th>
+                                <th style='padding:12px; border:1.5px solid #ffd600;'>Password</th>
+                                <th style='padding:12px; border:1.5px solid #ffd600;'>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map((u, idx) => `
+                                <tr>
+                                    <td style='padding:12px; border:1.5px solid #ffd600;'>${u.username || ""}</td>
+                                    <td style='padding:12px; border:1.5px solid #ffd600;'>${u.fullName || u.fullname || ""}</td>
+                                    <td style='padding:12px; border:1.5px solid #ffd600;'>${u.email || ""}</td>
+                                    <td style='padding:12px; border:1.5px solid #ffd600;'>${u.role || ""}</td>
+                                    <td style='padding:12px; border:1.5px solid #ffd600;'>${u.password || ""}</td>
+                                    <td style='padding:12px; border:1.5px solid #ffd600;'>
+                                        <button class="userUpdateBtn" data-idx="${idx}" style="background:#1976d2; color:#fff; border:none; border-radius:4px; padding:6px 16px; font-size:1rem; cursor:pointer;">Update</button>
+                                        <button class="userDeleteBtn" data-idx="${idx}" style="background:#d32f2f; color:#fff; border:none; border-radius:4px; padding:6px 16px; font-size:1rem; cursor:pointer; margin-left:6px;">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            }
         }
+
+        usersBtn.onclick = function () {
+            renderUsersTable();
+            usersModal.style.display = 'flex';
+
+            // Update user logic
+            document.querySelectorAll('.userUpdateBtn').forEach(btn => {
+                btn.onclick = function () {
+                    const idx = this.getAttribute('data-idx');
+                    let users = JSON.parse(localStorage.getItem('user') || '[]');
+                    const user = users[idx];
+                    let updateModal = document.getElementById('userUpdateModal');
+                    if (!updateModal) {
+                        updateModal = document.createElement('div');
+                        updateModal.id = 'userUpdateModal';
+                        updateModal.style.position = 'fixed';
+                        updateModal.style.top = '0';
+                        updateModal.style.left = '0';
+                        updateModal.style.width = '100vw';
+                        updateModal.style.height = '100vh';
+                        updateModal.style.background = 'rgba(0,0,0,0.4)';
+                        updateModal.style.zIndex = '3001';
+                        updateModal.style.display = 'flex';
+                        updateModal.style.alignItems = 'center';
+                        updateModal.style.justifyContent = 'center';
+                        updateModal.innerHTML = `
+                        <div style="background:#223d22; color:#ffd600; border:2px solid #ffd600; border-radius:8px; padding:2rem 2.5rem; min-width:260px; max-width:95vw; box-shadow:0 4px 24px rgba(0,0,0,0.25); position:relative;">
+                            <h3 style="margin-top:0; color:#ffd600;">Update User</h3>
+                            <form id="userUpdateForm" autocomplete="off">
+                                <label style="display:block; margin-bottom:0.7rem;">
+                                    Full Name:<br>
+                                    <input type="text" id="updateFullName" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ffd600; background:#1b2e1b; color:#fff;" required>
+                                </label>
+                                <label style="display:block; margin-bottom:0.7rem;">
+                                    Email:<br>
+                                    <input type="email" id="updateEmail" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ffd600; background:#1b2e1b; color:#fff;" required>
+                                </label>
+                                <label style="display:block; margin-bottom:0.7rem;">
+                                    Role:<br>
+                                    <select id="updateRole" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ffd600; background:#1b2e1b; color:#fff;" required>
+                                        <option value="">Select Role</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="user">User</option>
+                                        <option value="responder">Responder</option>
+                                    </select>
+                                </label>
+                                <label style="display:block; margin-bottom:0.7rem;">
+                                    Password:<br>
+                                    <input type="text" id="updatePassword" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ffd600; background:#1b2e1b; color:#fff;" required>
+                                </label>
+                                <div style="display:flex; gap:1rem; justify-content:right; margin-top:1.2rem;">
+                                    <button type="button" id="cancelUpdateUserBtn" style="background:#ffd600; color:#145a32; border:none; border-radius:4px; padding:0.6rem 1.4rem; font-weight:bold; cursor:pointer;">Cancel</button>
+                                    <button type="submit" style="background:#145a32; color:#ffd600; border:none; border-radius:4px; padding:0.6rem 1.4rem; font-weight:bold; cursor:pointer;">Save</button>
+                                </div>
+                            </form>
+                            <button id="closeUpdateUserModal" style="position:absolute; top:1rem; right:1rem; background:#ffd600; color:#145a32; border:none; border-radius:50%; width:32px; height:32px; font-size:1.2rem; cursor:pointer;">&times;</button>
+                        </div>
+                    `;
+                        document.body.appendChild(updateModal);
+                    } else {
+                        updateModal.style.display = 'flex';
+                    }
+                    updateModal.querySelector('#updateFullName').value = user.fullName || user.fullname || "";
+                    updateModal.querySelector('#updateEmail').value = user.email || "";
+                    updateModal.querySelector('#updateRole').value = user.role || "";
+                    updateModal.querySelector('#updatePassword').value = user.password || "";
+                    updateModal.querySelector('#closeUpdateUserModal').onclick =
+                        updateModal.querySelector('#cancelUpdateUserBtn').onclick = function () {
+                            updateModal.style.display = 'none';
+                        };
+                    updateModal.querySelector('#userUpdateForm').onsubmit = function (e) {
+                        e.preventDefault();
+                        users[idx] = {
+                            ...user,
+                            fullName: updateModal.querySelector('#updateFullName').value,
+                            email: updateModal.querySelector('#updateEmail').value,
+                            role: updateModal.querySelector('#updateRole').value,
+                            password: updateModal.querySelector('#updatePassword').value
+                        };
+                        localStorage.setItem('user', JSON.stringify(users));
+                        updateModal.style.display = 'none';
+
+                        setTimeout(function() {
+                        // Open Gmail compose with correct TO, subject, and message body
+                        var password = updateModal.querySelector('#updatePassword').value;
+                        var email = encodeURIComponent(updateModal.querySelector('#updateEmail').value);
+                        var subject = encodeURIComponent("Password Reset Request");
+                        var body = encodeURIComponent("Hello,\n\nYour password has been upadeted. This is your new password: " + password + ".\n\nThank you.");
+                        window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+ email +'&su=' + subject + '&body=' + body, '_blank');
+                    }, 1500);
+                        renderUsersTable();
+
+                        
+                    };
+                };
+            });
+            // Delete user logic
+            document.querySelectorAll('.userDeleteBtn').forEach(btn => {
+                btn.onclick = function () {
+                    const idx = this.getAttribute('data-idx');
+                    let confirmModal = document.getElementById('userConfirmModal');
+                    if (!confirmModal) {
+                        confirmModal = document.createElement('div');
+                        confirmModal.id = 'userConfirmModal';
+                        confirmModal.style.position = 'fixed';
+                        confirmModal.style.top = '0';
+                        confirmModal.style.left = '0';
+                        confirmModal.style.width = '100vw';
+                        confirmModal.style.height = '100vh';
+                        confirmModal.style.background = 'rgba(0,0,0,0.4)';
+                        confirmModal.style.zIndex = '3000';
+                        confirmModal.style.display = 'flex';
+                        confirmModal.style.alignItems = 'center';
+                        confirmModal.style.justifyContent = 'center';
+                        confirmModal.innerHTML = `
+                        <div style="background:#223d22; color:#ffd600; border:2px solid #ffd600; border-radius:8px; padding:2rem 2.5rem; text-align:center; min-width:260px; max-width:90vw; box-shadow:0 4px 24px rgba(0,0,0,0.25);">
+                            <div style="font-size:1.2rem; margin-bottom:1.2rem;">Are you sure you want to delete this user?</div>
+                            <div style="display:flex; gap:1.2rem; justify-content:right;">
+                                <button id="userConfirmNoBtn" style="background:#ffd600; color:#145a32; border:none; border-radius:4px; padding:0.6rem 1.4rem; font-weight:bold; cursor:pointer;">No</button>
+                                <button id="userConfirmYesBtn" style="background:#d32f2f; color:#fff; border:none; border-radius:4px; padding:0.6rem 1.4rem; font-weight:bold; cursor:pointer;">Yes</button>
+                            </div>
+                        </div>
+                    `;
+                        document.body.appendChild(confirmModal);
+                    } else {
+                        confirmModal.style.display = 'flex';
+                    }
+                    confirmModal.querySelector('#userConfirmYesBtn').onclick = function () {
+                        let users = JSON.parse(localStorage.getItem('user') || '[]');
+                        users.splice(idx, 1);
+                        localStorage.setItem('user', JSON.stringify(users));
+                        confirmModal.querySelector('div').innerHTML = '<div style="font-size:1.1rem; color:#ffd600; margin-bottom:0.8rem;">User deleted!</div>';
+                        setTimeout(() => {
+                            confirmModal.style.display = 'none';
+                            renderUsersTable();
+                        }, 1000);
+                    };
+                    confirmModal.querySelector('#userConfirmNoBtn').onclick = function () {
+                        confirmModal.style.display = 'none';
+                    };
+                };
+            });
+        };
+        closeUsersModal.onclick = function () {
+            usersModal.style.display = 'none';
+        };
+        window.addEventListener('click', function (e) {
+            if (e.target === usersModal) {
+                usersModal.style.display = 'none';
+            }
+        });
     </script>
     <!-- =======================
         END SCRIPTS & LOGIC
