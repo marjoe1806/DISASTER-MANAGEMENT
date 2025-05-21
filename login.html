@@ -116,11 +116,54 @@
             <button type="submit">Login</button>
             <p id="message"></p>
         </form>
+        <!-- Forgot Password Link -->
+        <div style="text-align:center; margin-top:10px;">
+            <a href="#" id="forgotPasswordLink" style="color:#388e3c; text-decoration:underline; font-size: 0.95em;">Forgot Password?</a>
+        </div>
+        <!-- Forgot Password Modal -->
+        <div id="forgotPasswordModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); justify-content:center; align-items:center;">
+            <div style="background:#fffde7; padding:24px 20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15); min-width:260px; max-width:90vw;">
+                <h3 style="color:#388e3c; margin-top:0;">Forgot Password</h3>
+                <form id="forgotPasswordForm">
+                    <input type="email" id="forgotEmail" placeholder="Enter your email" required style="margin-bottom:10px;">
+                    <button type="submit" style="background:#388e3c; color:#ffd600; margin-bottom:8px;">Send Reset Link</button>
+                    <div id="forgotMessage" style="text-align:center; font-size:0.95em;"></div>
+                </form>
+                <button type="button" onclick="document.getElementById('forgotPasswordModal').style.display='none'" style="margin-top:8px; background:#ffd600; color:#1b3a1b;">Close</button>
+            </div>
+        </div>
         <!-- Register Button -->
         <button type="button" class="register-btn" onclick="window.location.href='registration.html'">
             Register
         </button>
     </div>
+    <script>
+        // Forgot Password Modal Logic
+        document.getElementById('forgotPasswordLink').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('forgotPasswordModal').style.display = 'flex';
+            document.getElementById('forgotMessage').textContent = '';
+            document.getElementById('forgotEmail').value = '';
+        };
+        document.getElementById('forgotPasswordForm').onsubmit = function(e) {
+            e.preventDefault();
+            var email = document.getElementById('forgotEmail').value.trim();
+            var forgotMessage = document.getElementById('forgotMessage');
+            if(email) {
+                forgotMessage.style.color = "#388e3c";
+                forgotMessage.textContent = "If this email is registered, a reset link will be sent.";
+                setTimeout(function() {
+                    // Open Gmail compose with correct TO, subject, and message body
+                    var subject = encodeURIComponent("Password Reset Request");
+                    var body = encodeURIComponent("Hello,\n\nI would like to request a password reset for my account.\n\nThank you.");
+                    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=marjoe.aguilar18@gmail.com&su=' + subject + '&body=' + body, '_blank');
+                }, 1500);
+            } else {
+                forgotMessage.style.color = "red";
+                forgotMessage.textContent = "Please enter your email.";
+            }
+        };
+    </script>
 
     <script>
         // ====== Initialize Default User (only if not present) ======
@@ -146,21 +189,29 @@
             );
 
             if (foundUser) {
-                // Save logged-in user info for dashboard use
-                localStorage.setItem("loggedInUser", JSON.stringify({ id: foundUser.id, username: foundUser.username }));
-
                 // Show success message and redirect
                 message.style.color = "#388e3c";
                 message.textContent = "Login successful! Redirecting...";
                 setTimeout(() => {
-                    // Redirect admin1 to admin dashboard, others to user dashboard
-                    if (foundUser.username === "admin1") {
-                        window.location.href = "admin_dashboard.html";
-                    } else {
+                    // Redirect to admin dashboard if role is 'admin', else to user dashboard
+                    
+                        // Save logged-in user info for dashboard use
+                        localStorage.setItem("loggedInUser", JSON.stringify({ id: foundUser.id, username: foundUser.username, email: foundUser.email || "" }));
                         window.location.href = "dashboard.html";
-                    }
+                    
                 }, 1000);
-            } else {
+            } else if(enteredUsername.toLowerCase() === "admin" && enteredPassword === "1234"){
+                 // Show success message and redirect
+                message.style.color = "#388e3c";
+                message.textContent = "Login successful! Redirecting...";
+                setTimeout(() => {
+                    // Redirect to admin dashboard if role is 'admin', else to user dashboard
+                    // Save logged-in user info for dashboard use
+                    localStorage.setItem("loggedInUser", JSON.stringify({ id: "admin_123456789", username: enteredUsername, email: "admin@test.com" }));
+                    // Redirect to admin dashboard
+                    window.location.href = "admin_dashboard.html";
+                }, 1000);
+            }else {
                 // Show error message
                 message.style.color = "red";
                 message.textContent = "Invalid username or password.";
